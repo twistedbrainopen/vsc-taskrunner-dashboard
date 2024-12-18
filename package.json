@@ -1,8 +1,13 @@
 {
     "name": "task-runner-dashboard",
     "displayName": "Task Runner Dashboard",
-    "description": "Interaktiv dashboard for projekt tasks",
+    "description": "Interaktiv dashboard for projekt tasks med PDSL integration",
     "version": "0.0.1",
+    "publisher": "[your-name]",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/[username]/vscode-task-runner-dashboard"
+    },
     "engines": {
         "vscode": "^1.80.0"
     },

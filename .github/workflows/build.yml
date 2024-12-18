@@ -1,0 +1,36 @@
+name: Build Extension
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16.x'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Compile TypeScript
+        run: npm run compile
+      
+      - name: Package Extension
+        run: npx vsce package
+      
+      - name: Upload VSIX
+        uses: actions/upload-artifact@v2
+        with:
+          name: task-runner-dashboard
+          path: "*.vsix"
