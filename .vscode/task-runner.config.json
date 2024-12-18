@@ -1,6 +1,18 @@
 {
     "taskRunner": {
         "categories": {
+            "status": {
+                "name": "Status",
+                "tasks": [
+                    {
+                        "id": "generate-report",
+                        "label": "Generate Report",
+                        "command": "generateReport",
+                        "icon": "graph",
+                        "color": "#CF9178"
+                    }
+                ]
+            },
             "build": {
                 "name": "Build",
                 "tasks": [
@@ -9,14 +21,7 @@
                         "label": "Build Project",
                         "command": "npm run build",
                         "icon": "package",
-                        "color": "#4EC9B0",
-                        "tracking": {
-                            "autoDetect": true,
-                            "patterns": [
-                                "Build completed",
-                                "Compiled successfully"
-                            ]
-                        }
+                        "color": "#4EC9B0"
                     }
                 ]
             },
@@ -28,41 +33,9 @@
                         "label": "Run Tests",
                         "command": "npm test",
                         "icon": "beaker",
-                        "color": "#007ACC",
-                        "tracking": {
-                            "autoDetect": true,
-                            "patterns": [
-                                "tests passed",
-                                "Test Completed"
-                            ]
-                        }
+                        "color": "#007ACC"
                     }
                 ]
-            },
-            "status": {
-                "name": "Status",
-                "tasks": [
-                    {
-                        "id": "generate-report",
-                        "label": "Generate Report",
-                        "command": "node scripts/generate-status-report.js",
-                        "icon": "graph",
-                        "color": "#CF9178",
-                        "autoUpdate": true
-                    }
-                ]
-            }
-        },
-        "automation": {
-            "statusUpdates": {
-                "enabled": true,
-                "interval": "1h",
-                "updatePDSL": true
-            },
-            "gitIntegration": {
-                "enabled": true,
-                "updateOnCommit": true,
-                "branchTracking": true
             }
         }
     }
