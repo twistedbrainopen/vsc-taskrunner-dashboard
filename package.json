@@ -6,7 +6,7 @@
     "publisher": "lpmwfx",
     "repository": {
         "type": "git",
-        "url": "https://github.com/lpmwfx/vsc-taskrunner-dashboard"
+        "url": "https://github.com/twistedbrainopen/vsc-taskrunner-dashboard"
     },
     "engines": {
         "vscode": "^1.80.0"
