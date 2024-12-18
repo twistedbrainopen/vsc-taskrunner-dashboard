@@ -35,26 +35,19 @@ class TaskRunnerPanel {
                     await this._executeTask(message.taskId);
                     break;
                 case 'generateReport':
+                    console.log('Generating report...'); // Debug log
                     const report = await this._generateStatusReport();
-                    // Vis save dialog og gem rapporten
-                    const defaultPath = path.join(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', 'project-status-report.md');
-                    const uri = await vscode.window.showSaveDialog({
-                        defaultUri: vscode.Uri.file(defaultPath),
-                        filters: {
-                            'Markdown': ['md'],
-                            'Text': ['txt']
-                        },
-                        title: 'Gem Status Rapport'
+                    console.log('Report generated:', report); // Debug log
+                    // Vis rapport i en garanteret ny tab
+                    const doc = await vscode.workspace.openTextDocument({
+                        content: report,
+                        language: 'markdown'
                     });
-                    if (uri) {
-                        try {
-                            await fs.promises.writeFile(uri.fsPath, report);
-                            vscode.window.showInformationMessage(`Rapport gemt som: ${uri.fsPath}`);
-                        }
-                        catch (error) {
-                            vscode.window.showErrorMessage('Kunne ikke gemme rapport: ' + error);
-                        }
-                    }
+                    await vscode.window.showTextDocument(doc, {
+                        preview: false,
+                        viewColumn: vscode.ViewColumn.Nine,
+                        preserveFocus: false
+                    });
                     break;
                 case 'refreshTasks':
                     await this.update();
