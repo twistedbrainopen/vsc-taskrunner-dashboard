@@ -3,10 +3,10 @@
     "displayName": "Task Runner Dashboard",
     "description": "Interaktiv dashboard for projekt tasks med PDSL integration",
     "version": "0.0.1",
-    "publisher": "[your-name]",
+    "publisher": "lpmwfx",
     "repository": {
         "type": "git",
-        "url": "https://github.com/[username]/vscode-task-runner-dashboard"
+        "url": "https://github.com/lpmwfx/vsc-taskrunner-dashboard"
     },
     "engines": {
         "vscode": "^1.80.0"
