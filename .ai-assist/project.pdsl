@@ -1,0 +1,498 @@
+{
+    "PROJECT": {
+        "name": "InkDSLParser",
+        "version": "1.0.0",
+        "description": "Parser og validator for Ink narrative scripting sprog"
+    },
+
+    "DEPENDENCIES": {
+        "require": ["format", "json2object", "utest"]
+    },
+
+    "DEVELOPMENT": {
+        "logging": {
+            "enabled": true,
+            "system": {
+                "path": "scripts/logs",
+                "rotation": {
+                    "enabled": true,
+                    "max_files": 10,
+                    "max_size": "100MB"
+                },
+                "levels": {
+                    "debug": "logs/debug.log",
+                    "info": "logs/info.log",
+                    "warning": "logs/warn.log",
+                    "error": "logs/error.log"
+                },
+                "format": {
+                    "timestamp": "ISO8601",
+                    "include": ["level", "source", "thread", "stack_trace"]
+                }
+            },
+            "monitors": {
+                "performance": {
+                    "enabled": true,
+                    "metrics": ["cpu", "memory", "gc", "threads"],
+                    "interval": 1000,
+                    "output": "logs/performance.log"
+                },
+                "parser": {
+                    "enabled": true,
+                    "track": ["tokens", "ast_nodes", "errors"],
+                    "output": "logs/parser_metrics.log"
+                }
+            }
+        },
+
+        "scripts": {
+            "test_runner": {
+                "path": "scripts/RunTests.hx",
+                "symlink": "RunTests",
+                "command": "RunTests.command",
+                "shortcuts": [
+                    {
+                        "name": "Run Tests",
+                        "command": "./RunTests",
+                        "description": "Kører alle tests én gang"
+                    },
+                    {
+                        "name": "Watch Tests",
+                        "command": "fswatch -o . | xargs -n1 -I{} ./RunTests",
+                        "description": "Overvåger filændringer og kører tests automatisk"
+                    },
+                    {
+                        "name": "Clean Logs",
+                        "command": "rm -f scripts/logs/*.log",
+                        "description": "Rydder op i log filer"
+                    },
+                    {
+                        "name": "Performance Test",
+                        "command": "./RunTests --perf",
+                        "description": "Kør performance benchmark suite"
+                    },
+                    {
+                        "name": "Coverage Report",
+                        "command": "./RunTests --coverage",
+                        "description": "Generér code coverage rapport"
+                    },
+                    {
+                        "name": "Stress Test",
+                        "command": "./RunTests --stress",
+                        "description": "Kør stress test med store filer"
+                    }
+                ],
+                "automation": {
+                    "schedules": [
+                        {
+                            "name": "Quick Tests",
+                            "interval": "5m",
+                            "command": "./RunTests --quick",
+                            "timeout": "30s"
+                        },
+                        {
+                            "name": "Full Suite",
+                            "interval": "1h",
+                            "command": "./RunTests --full",
+                            "timeout": "10m"
+                        },
+                        {
+                            "name": "Performance Check",
+                            "interval": "4h",
+                            "command": "./RunTests --perf",
+                            "timeout": "5m"
+                        },
+                        {
+                            "name": "Stress Test",
+                            "interval": "1d",
+                            "command": "./RunTests --stress",
+                            "timeout": "30m"
+                        }
+                    ],
+                    "triggers": {
+                        "git_hooks": {
+                            "pre-commit": "./RunTests --quick",
+                            "pre-push": "./RunTests --full"
+                        },
+                        "file_changes": {
+                            "src/**/*.hx": "./RunTests --affected",
+                            "test/**/*.hx": "./RunTests --unit",
+                            "test/fixtures/**/*": "./RunTests --integration"
+                        }
+                    }
+                }
+            }
+        },
+
+        "test_fixtures": {
+            "structure": [
+                {"ink": "Test input filer i Ink format"},
+                {"expected_json": "Reference output fra original Ink compiler"},
+                {"output_json": "Parser output til test sammenligning"}
+            ],
+            "validation_flow": {
+                "steps": [
+                    "Kompiler .ink fil med original compiler",
+                    "Parse samme .ink fil med vores parser",
+                    "Sammenlign JSON output",
+                    "Valider AST struktur",
+                    "Check error reporting"
+                ],
+                "directories": {
+                    "input": "test/fixtures/ink",
+                    "expected": "test/fixtures/expected_json",
+                    "actual": "test/fixtures/output_json",
+                    "diffs": "test/fixtures/diffs"
+                },
+                "categories": [
+                    "basic_flow: Simple narrative forløb",
+                    "choices: Valgmuligheder og branches",
+                    "variables: Variable manipulation",
+                    "conditions: If/else strukturer",
+                    "functions: Eksterne funktionskald",
+                    "errors: Error cases og recovery",
+                    "nesting: Dybt nestede strukturer",
+                    "state: State tracking og persistence",
+                    "tunneling: Tunnel redirects",
+                    "includes: File inclusion",
+                    "lists: List operations",
+                    "math: Mathematical operations",
+                    "strings: String manipulation",
+                    "comments: Forskellige comment typer",
+                    "whitespace: Whitespace edge cases",
+                    "unicode: Unicode håndtering"
+                ]
+            },
+            "continuous_testing": {
+                "watch_mode": {
+                    "enabled": true,
+                    "interval": 500,
+                    "paths": [
+                        "src/**/*.hx",
+                        "test/**/*.hx",
+                        "test/fixtures/ink/**/*.ink"
+                    ],
+                    "ignore": [
+                        "**/*.tmp",
+                        "**/*.log"
+                    ]
+                },
+                "triggers": {
+                    "on_save": true,
+                    "on_branch_switch": true,
+                    "pre_commit": true,
+                    "post_merge": true
+                },
+                "parallel": {
+                    "enabled": true,
+                    "max_threads": 4,
+                    "timeout": 30000
+                },
+                "reporting": {
+                    "console": {
+                        "enabled": true,
+                        "colors": true,
+                        "verbose": true
+                    },
+                    "file": {
+                        "enabled": true,
+                        "path": "test/reports",
+                        "format": ["json", "html"]
+                    },
+                    "notification": {
+                        "enabled": true,
+                        "on_failure": true,
+                        "on_success": false
+                    },
+                    "formats": {
+                        "junit": {
+                            "enabled": true,
+                            "path": "test/reports/junit.xml"
+                        },
+                        "html": {
+                            "enabled": true,
+                            "path": "test/reports/report.html",
+                            "template": "test/templates/report.html"
+                        },
+                        "markdown": {
+                            "enabled": true,
+                            "path": "test/reports/TESTRESULTS.md"
+                        },
+                        "coverage": {
+                            "enabled": true,
+                            "formats": ["lcov", "html", "cobertura"],
+                            "path": "test/coverage"
+                        }
+                    }
+                }
+            }
+        },
+
+        "vscode": {
+            "files": {
+                "associations": {
+                    "*.pdsl": "json",
+                    "*.ink": "ink"
+                }
+            },
+            "tasks": {
+                "test": "Kør test suite",
+                "watch": "Watch mode for tests",
+                "build": "Build projektet"
+            }
+        }
+    },
+
+    "STATUS": {
+        "implemented": [
+            "Lexer med token generation",
+            "AST datastrukturer",
+            "Basis ASTBuilder",
+            "Test framework med logging",
+            "Test fixtures struktur",
+            "JSON output generator",
+            "Basic knots og stitches",
+            "Simple diverts (->)",
+            "Text output",
+            "End markering",
+            "Whitespace håndtering",
+            "Choice parsing",
+            "Gather points",
+            "Nested choices",
+            "Conditions (if/else)",
+            "Basic variables",
+            "Variable operations",
+            "Token parsing system",
+            "Basic error reporting",
+            "JSON output validation",
+            "Test automation scripts"
+        ],
+
+        "in_progress": [
+            "Error handling",
+            "Code optimization",
+            "Variable scope checking",
+            "Type validation",
+            "Advanced error messages",
+            "AST optimization",
+            "Parser performance improvements"
+        ],
+
+        "next_iteration": [
+            "List support",
+            "External functions",
+            "Tunneling (->-> og <-)",
+            "Include file handling"
+        ],
+
+        "validation": {
+            "tools": [
+                "Original Ink compiler (inklua/inky)",
+                "JSON diff værktøj",
+                "Test suite med eksempel filer"
+            ],
+            "error_handling": [
+                "Undefined variables",
+                "Type mismatches",
+                "Invalid operations",
+                "Scope violations",
+                "Syntax errors"
+            ]
+        }
+    },
+
+    "OPTIMIZATION": {
+        "priority": "DRY Refactoring og Code Quality",
+        "patterns": [
+            "Generic token matcher",
+            "Error handler singleton",
+            "Type validator service",
+            "AST visitor pattern",
+            "Builder pattern for nodes"
+        ],
+        "metrics": [
+            "Reducér code duplication med 40%",
+            "Øg test coverage til 95%",
+            "Reducér cyclomatic complexity",
+            "Forbedre maintainability index"
+        ],
+        "refactoring": {
+            "parser": [
+                "Generiske token parsers",
+                "Centraliseret error handling",
+                "Type-safe AST builders",
+                "Shared validation logic"
+            ],
+            "output": [
+                "Abstrakt node formatter",
+                "Generisk JSON serialization",
+                "Reusable formatting helpers"
+            ]
+        }
+    },
+
+    "PLATFORM_STRATEGY": {
+        "core": {
+            "name": "AST",
+            "description": "Central Abstract Syntax Tree",
+            "role": "Platform-uafhængig repræsentation af Ink stories",
+            "features": [
+                "Komplet story struktur",
+                "Variable tracking",
+                "State management",
+                "Flow control"
+            ],
+            "validation": {
+                "integrity": "AST konsistens check",
+                "completeness": "Node relations validering",
+                "optimization": "Tree optimization passes"
+            }
+        },
+        "generators": {
+            "web": {
+                "name": "JSON Generator",
+                "target": "Web/PWA",
+                "output": "Ink JSON format",
+                "runtime": "ink.js",
+                "features": [
+                    "Standard Ink JSON format",
+                    "Web Worker support",
+                    "State serialization",
+                    "Async story loading"
+                ],
+                "optimization": {
+                    "minification": true,
+                    "tree_shaking": true,
+                    "lazy_loading": true
+                }
+            },
+            "mobile": {
+                "ios": {
+                    "name": "Swift Generator",
+                    "output": "Native Swift code",
+                    "features": [
+                        "Native performance",
+                        "Memory efficient",
+                        "SwiftUI integration",
+                        "State persistence"
+                    ]
+                },
+                "android": {
+                    "name": "Kotlin Generator",
+                    "output": "Native Kotlin code",
+                    "features": [
+                        "Kotlin coroutines",
+                        "Jetpack Compose ready",
+                        "Android lifecycle aware",
+                        "Background processing"
+                    ]
+                }
+            }
+        }
+    },
+
+    "CONFIGURATION": {
+        "debug": {
+            "flags": [
+                "-debug",
+                "-D source-map",
+                "--dce full",
+                "--strict",
+                "-D diagnostic-level=WARNING",
+                "-D warn-var-shadowing",
+                "-D warn-unused-vars",
+                "-D warn-unused-imports",
+                "-D warn-deprecated",
+                "-D warn-dead-code",
+                "-D check-platform",
+                "-D analyzer-optimize",
+                "-D analyzer-user-var-fusion"
+            ]
+        },
+        "lint": {
+            "severity": {
+                "compiler": "error",
+                "unusedImport": "error",
+                "unusedVariable": "error",
+                "deprecation": "error",
+                "codingConvention": "warning",
+                "semicolon": "error",
+                "assignment": "error",
+                "signature": "error",
+                "type": "error",
+                "unification": "error",
+                "return": "error"
+            }
+        },
+        "targets": {
+            "development": {
+                "output": "bin/ink_parser.hl",
+                "target": "hl"
+            },
+            "web": {
+                "output": "bin/ink_parser.js",
+                "target": "js"
+            },
+            "native": {
+                "output": "bin/native",
+                "target": "cpp"
+            }
+        }
+    },
+
+    "ERROR_HANDLING": {
+        "strategy": {
+            "parsing": {
+                "recovery": true,
+                "max_errors": 10,
+                "context_lines": 3
+            },
+            "validation": {
+                "early_exit": false,
+                "aggregate_errors": true
+            }
+        },
+        "categories": {
+            "syntax": {
+                "severity": "error",
+                "recovery": true,
+                "examples": [
+                    "Manglende slutparentes",
+                    "Uventet token",
+                    "Invalid escape sequence"
+                ]
+            },
+            "semantic": {
+                "severity": "error",
+                "recovery": false,
+                "examples": [
+                    "Udefineret variabel",
+                    "Type mismatch",
+                    "Invalid operation"
+                ]
+            },
+            "scope": {
+                "severity": "error",
+                "recovery": false,
+                "examples": [
+                    "Variable shadowing",
+                    "Out of scope access",
+                    "Invalid modification"
+                ]
+            }
+        },
+        "reporting": {
+            "format": {
+                "location": true,
+                "source_extract": true,
+                "suggestion": true,
+                "error_code": true
+            },
+            "aggregation": {
+                "group_by": ["file", "type", "severity"],
+                "max_per_group": 5,
+                "summary": true
+            }
+        }
+    }
+} 

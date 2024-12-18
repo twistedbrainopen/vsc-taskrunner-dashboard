@@ -1,0 +1,69 @@
+{
+    "taskRunner": {
+        "categories": {
+            "build": {
+                "name": "Build",
+                "tasks": [
+                    {
+                        "id": "build",
+                        "label": "Build Project",
+                        "command": "npm run build",
+                        "icon": "package",
+                        "color": "#4EC9B0",
+                        "tracking": {
+                            "autoDetect": true,
+                            "patterns": [
+                                "Build completed",
+                                "Compiled successfully"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "test": {
+                "name": "Test",
+                "tasks": [
+                    {
+                        "id": "test",
+                        "label": "Run Tests",
+                        "command": "npm test",
+                        "icon": "beaker",
+                        "color": "#007ACC",
+                        "tracking": {
+                            "autoDetect": true,
+                            "patterns": [
+                                "tests passed",
+                                "Test Completed"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "name": "Status",
+                "tasks": [
+                    {
+                        "id": "generate-report",
+                        "label": "Generate Report",
+                        "command": "node scripts/generate-status-report.js",
+                        "icon": "graph",
+                        "color": "#CF9178",
+                        "autoUpdate": true
+                    }
+                ]
+            }
+        },
+        "automation": {
+            "statusUpdates": {
+                "enabled": true,
+                "interval": "1h",
+                "updatePDSL": true
+            },
+            "gitIntegration": {
+                "enabled": true,
+                "updateOnCommit": true,
+                "branchTracking": true
+            }
+        }
+    }
+} 

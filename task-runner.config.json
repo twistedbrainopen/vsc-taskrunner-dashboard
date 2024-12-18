@@ -1,0 +1,32 @@
+{
+    "taskRunner": {
+        "categories": {
+            "build": {
+                "name": "Build",
+                "tasks": [
+                    {
+                        "id": "compile",
+                        "label": "Kompiler Extension",
+                        "command": "npm run compile",
+                        "tooltip": "Kompilerer TypeScript koden",
+                        "icon": "tools",
+                        "color": "#007ACC"
+                    }
+                ]
+            },
+            "dev": {
+                "name": "Udvikling",
+                "tasks": [
+                    {
+                        "id": "watch",
+                        "label": "Watch Mode",
+                        "command": "npm run watch",
+                        "tooltip": "Starter watch mode for automatisk kompilering",
+                        "icon": "eye",
+                        "color": "#4CAF50"
+                    }
+                ]
+            }
+        }
+    }
+}
