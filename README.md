@@ -87,3 +87,4 @@ Det anbefales at placere konfigurationsfilen i `.vscode` mappen for at holde pro
 - Test med forskellige task typer
 - Husk at recompile efter ændringer
 - Check extension logs i Output panel under "Task Runner"
+# vsc-taskrunner-dashboard
