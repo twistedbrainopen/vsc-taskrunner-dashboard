@@ -87,4 +87,59 @@ Det anbefales at placere konfigurationsfilen i `.vscode` mappen for at holde pro
 - Test med forskellige task typer
 - Husk at recompile efter ændringer
 - Check extension logs i Output panel under "Task Runner"
+
+## Installation i Nyt Projekt
+
+### Metode 1: Via PDSL Init (Anbefalet)
+1. Opret `.ai-assist` mappe i dit projekt
+2. Opret `ai-project-init.pdsl` med:
+```json
+{
+    "vscode": {
+        "extensions": [
+            {
+                "name": "task-runner-dashboard",
+                "source": "github:twistedbrainopen/vsc-taskrunner-dashboard",
+                "autoInstall": true
+            }
+        ]
+    }
+}
+```
+
+### Metode 2: Manuel Installation
+1. Download VSIX fra GitHub:
+   - Gå til https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/actions
+   - Vælg seneste successful build
+   - Download VSIX artifact
+2. Installer i VSCode:
+   - Cmd+Shift+P → "Extensions: Install from VSIX"
+   - Vælg downloaded VSIX fil
+
+### Konfiguration
+1. Opret `.vscode/task-runner.config.json`:
+```json
+{
+    "taskRunner": {
+        "categories": {
+            "build": {
+                "name": "Build",
+                "tasks": [
+                    {
+                        "id": "build",
+                        "label": "Build Project",
+                        "command": "npm run build",
+                        "icon": "package",
+                        "color": "#4EC9B0"
+                    }
+                ]
+            }
+        }
+    }
+}
+```
+
+2. Åbn Task Runner:
+   - Cmd+Shift+P → "Task Runner: Åbn Dashboard"
+
 # vsc-taskrunner-dashboard

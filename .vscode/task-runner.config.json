@@ -1,18 +1,6 @@
 {
     "taskRunner": {
         "categories": {
-            "status": {
-                "name": "Status",
-                "tasks": [
-                    {
-                        "id": "generate-report",
-                        "label": "Generate Report",
-                        "command": "generateReport",
-                        "icon": "graph",
-                        "color": "#CF9178"
-                    }
-                ]
-            },
             "build": {
                 "name": "Build",
                 "tasks": [
@@ -24,19 +12,7 @@
                         "color": "#4EC9B0"
                     }
                 ]
-            },
-            "test": {
-                "name": "Test",
-                "tasks": [
-                    {
-                        "id": "test",
-                        "label": "Run Tests",
-                        "command": "npm test",
-                        "icon": "beaker",
-                        "color": "#007ACC"
-                    }
-                ]
             }
         }
     }
-} 
+}
