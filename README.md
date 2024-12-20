@@ -84,6 +84,71 @@ chmod +x install.sh
 ./install.sh
 ```
 
+## Opdatering
+
+### Via update.sh
+1. Opret `update.sh` i dit projekt:
+```bash
+#!/bin/bash
+
+# Farver til output
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}Updating Task Runner Dashboard...${NC}"
+
+# Backup eksisterende config
+echo -e "${YELLOW}Backing up existing config...${NC}"
+if [ -f .vscode/task-runner.config.json ]; then
+    cp .vscode/task-runner.config.json .vscode/task-runner.config.backup.json
+    echo -e "${GREEN}Config backup created at .vscode/task-runner.config.backup.json${NC}"
+fi
+
+# Download seneste VSIX fra GitHub
+echo -e "${GREEN}Downloading latest VSIX...${NC}"
+curl -L https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/task-runner-dashboard.vsix -o task-runner-dashboard.vsix
+
+# Afinstaller gammel version
+echo -e "${YELLOW}Removing old version...${NC}"
+code --uninstall-extension twistedbrainopen.task-runner-dashboard
+
+# Installer ny version
+echo -e "${GREEN}Installing new version...${NC}"
+code --install-extension task-runner-dashboard.vsix
+
+# Oprydning
+echo -e "${GREEN}Cleaning up...${NC}"
+rm task-runner-dashboard.vsix
+
+echo -e "${BLUE}Update complete!${NC}"
+echo -e "${YELLOW}Note: Your existing config has been preserved${NC}"
+echo -e "${BLUE}Restart VSCode to apply changes${NC}"
+```
+
+2. Gør scriptet eksekverbart:
+```bash
+chmod +x update.sh
+```
+
+3. Kør scriptet:
+```bash
+./update.sh
+```
+
+4. Genstart VSCode for at aktivere den nye version
+
+### Manuelle Opdateringer
+Hvis du foretrækker at opdatere manuelt:
+
+1. Åbn VSCode
+2. Gå til Extensions (Ctrl+Shift+X)
+3. Søg efter "Task Runner Dashboard"
+4. Klik på "Uninstall"
+5. Download den seneste VSIX fra GitHub releases
+6. Installer den nye version via VSIX filen
+
 ## Konfiguration
 Task Runner Dashboard konfigureres via `.vscode/task-runner.config.json`. Her er et eksempel:
 
