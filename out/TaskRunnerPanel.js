@@ -26,6 +26,12 @@ class TaskRunnerPanel {
         this._lastScrollPosition = 0;
         this._panel = panel;
         this._extensionUri = extensionUri;
+        // Gendan state fra fil
+        this.loadState().then(state => {
+            this._lastViewedPdslFile = state.lastViewedPdslFile;
+            this._lastScrollPosition = state.lastScrollPosition;
+            this.update(); // Opdater view med gendannet state
+        });
         // Initialiser PDSL files
         this.initializePdslFiles();
         // Start med at opdatere panelet
@@ -58,6 +64,7 @@ class TaskRunnerPanel {
                     const selectedFile = this._pdslFiles.find(f => f.path === message.path);
                     if (selectedFile) {
                         this._lastViewedPdslFile = message.path;
+                        await this.saveState();
                         const formattedContent = this._formatPdslContent(selectedFile.content);
                         this._panel.webview.postMessage({
                             command: 'updatePdslView',
@@ -68,11 +75,15 @@ class TaskRunnerPanel {
                     break;
                 case 'saveScrollPosition':
                     this._lastScrollPosition = message.position;
+                    await this.saveState();
                     break;
             }
         }, null, this._disposables);
         // Lyt efter panel lukning
-        this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+        this._panel.onDidDispose(async () => {
+            await this.saveState();
+            this.dispose();
+        }, null, this._disposables);
     }
     static createOrShow(extensionUri) {
         const column = vscode.window.activeTextEditor
@@ -85,7 +96,8 @@ class TaskRunnerPanel {
         }
         const panel = vscode.window.createWebviewPanel('taskRunner', 'Task Runner Dashboard', column || vscode.ViewColumn.One, {
             enableScripts: true,
-            localResourceRoots: [extensionUri]
+            localResourceRoots: [extensionUri],
+            retainContextWhenHidden: true // Behold webview state når panel er skjult
         });
         TaskRunnerPanel.currentPanel = new TaskRunnerPanel(panel, extensionUri);
     }
@@ -847,6 +859,39 @@ class TaskRunnerPanel {
                     ${file.path}
                 </option>
             `).join('');
+    }
+    async loadState() {
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+        if (!workspaceFolder) {
+            return { lastScrollPosition: 0 };
+        }
+        const statePath = path.join(workspaceFolder.uri.fsPath, '.vscode', 'task-runner-state.json');
+        try {
+            const content = await fs.promises.readFile(statePath, 'utf-8');
+            return JSON.parse(content);
+        }
+        catch (error) {
+            return { lastScrollPosition: 0 };
+        }
+    }
+    async saveState() {
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+        if (!workspaceFolder)
+            return;
+        const vscodeDir = path.join(workspaceFolder.uri.fsPath, '.vscode');
+        const statePath = path.join(vscodeDir, 'task-runner-state.json');
+        try {
+            // Sikr at .vscode mappe eksisterer
+            await fs.promises.mkdir(vscodeDir, { recursive: true });
+            const state = {
+                lastViewedPdslFile: this._lastViewedPdslFile,
+                lastScrollPosition: this._lastScrollPosition
+            };
+            await fs.promises.writeFile(statePath, JSON.stringify(state, null, 2));
+        }
+        catch (error) {
+            console.error('Kunne ikke gemme task runner state:', error);
+        }
     }
 }
 exports.TaskRunnerPanel = TaskRunnerPanel;
