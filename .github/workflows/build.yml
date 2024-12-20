@@ -22,8 +22,8 @@ jobs:
           npm cache clean --force
           rm -rf node_modules package-lock.json
           npm install
-          npm install -D @types/node@12.11.7
-          npm install -D typescript@4.1.2
+          npm install -D @types/node@16
+          npm install -D typescript@4.9.5
       
       - name: Verify TypeScript Installation
         run: |
