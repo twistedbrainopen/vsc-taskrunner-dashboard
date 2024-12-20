@@ -3,56 +3,55 @@
 # Farver til output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}Installing Task Runner Dashboard...${NC}"
-
-# Opret nødvendige mapper
-echo -e "${GREEN}Creating directories...${NC}"
-mkdir -p .vscode
-mkdir -p .ai-assist
-mkdir -p .task-runner
-
-# Download og udpak Task Runner filer
-echo -e "${GREEN}Downloading Task Runner files...${NC}"
-curl -L https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/task-runner-files.zip -o task-runner-files.zip
-unzip -o task-runner-files.zip -d .task-runner/
-
-# Kopier nødvendige filer
-echo -e "${GREEN}Setting up Task Runner...${NC}"
-cp -r .task-runner/out .task-runner/node_modules .task-runner/media ./
-cp .task-runner/package.json ./
-cp .task-runner/HOWTO.md ./
-
-# Opret task-runner.config.json hvis den ikke findes
-if [ ! -f .vscode/task-runner.config.json ]; then
-    echo -e "${GREEN}Creating default config...${NC}"
-    cat > .vscode/task-runner.config.json << 'EOL'
-{
-    "taskRunner": {
-        "categories": {
-            "build": {
-                "name": "Build",
-                "tasks": [
-                    {
-                        "id": "build",
-                        "label": "Build Project",
-                        "command": "npm run build",
-                        "icon": "package",
-                        "color": "#4EC9B0"
-                    }
-                ]
-            }
-        }
-    }
+# Fejlhåndteringsfunktion
+handle_error() {
+    echo -e "${RED}Fejl: $1${NC}"
+    echo -e "${YELLOW}Prøver at rydde op...${NC}"
+    rm -rf .task-runner task-runner-files.zip
+    exit 1
 }
-EOL
+
+echo -e "${BLUE}Setting up Task Runner...${NC}"
+
+# Opret .vscode mappe hvis den ikke findes
+mkdir -p .vscode || handle_error "Kunne ikke oprette .vscode mappe"
+
+# Download og verificer zip fil
+echo -e "${GREEN}Downloading files...${NC}"
+curl -L -o task-runner-files.zip https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/task-runner-files.zip || handle_error "Download fejlede"
+
+# Verificer at zip filen eksisterer og har indhold
+if [ ! -s task-runner-files.zip ]; then
+    handle_error "Zip filen er tom eller eksisterer ikke"
 fi
+
+# Udpak filer
+echo -e "${GREEN}Extracting files...${NC}"
+mkdir -p .task-runner || handle_error "Kunne ikke oprette midlertidig mappe"
+unzip -o task-runner-files.zip -d .task-runner/ || handle_error "Kunne ikke udpakke zip fil"
+
+# Verificer at nødvendige filer og mapper eksisterer
+required_files=("out" "node_modules" "media" "package.json" "HOWTO.md")
+for file in "${required_files[@]}"; do
+    if [ ! -e ".task-runner/$file" ]; then
+        handle_error "Manglende fil/mappe: $file"
+    fi
+done
+
+# Kopier filer
+echo -e "${GREEN}Installing files...${NC}"
+for file in "${required_files[@]}"; do
+    cp -r ".task-runner/$file" ./ || handle_error "Kunne ikke kopiere $file"
+done
 
 # Oprydning
 echo -e "${GREEN}Cleaning up...${NC}"
-rm -rf task-runner-files.zip .task-runner
+rm -rf .task-runner task-runner-files.zip
 
 echo -e "${BLUE}Installation complete!${NC}"
-echo -e "${BLUE}Restart VSCode to activate Task Runner Dashboard${NC}"
+echo -e "${YELLOW}Restart VSCode to activate Task Runner Dashboard${NC}"
 echo -e "${GREEN}See HOWTO.md for usage instructions${NC}" 

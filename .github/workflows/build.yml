@@ -29,8 +29,20 @@ jobs:
       - name: Package Extension
         run: npx vsce package
       
+      - name: Create Release Package
+        run: |
+          mkdir -p release
+          cp -r out node_modules media package.json HOWTO.md release/
+          cd release && zip -r ../task-runner-files.zip *
+      
       - name: Upload VSIX
         uses: actions/upload-artifact@v3
         with:
-          name: task-runner-dashboard
+          name: task-runner-dashboard-vsix
           path: "*.vsix"
+          
+      - name: Upload Release Files
+        uses: actions/upload-artifact@v3
+        with:
+          name: task-runner-files
+          path: task-runner-files.zip
