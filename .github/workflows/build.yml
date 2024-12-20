@@ -21,9 +21,14 @@ jobs:
         run: |
           rm -rf node_modules
           npm ci
+          npm install -D @types/node@12.11.7
+          npm install -D typescript@4.1.2
       
-      - name: Install TypeScript
-        run: npm install -g typescript@4.1.2
+      - name: Verify TypeScript Installation
+        run: |
+          tsc --version
+          ls -la node_modules/typescript/lib/
+          ls -la node_modules/@types/node/
       
       - name: Compile TypeScript
-        run: npm run compile
+        run: tsc -p ./
