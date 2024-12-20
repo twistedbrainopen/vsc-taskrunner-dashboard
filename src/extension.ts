@@ -3,50 +3,65 @@ import { TaskRunnerPanel } from './TaskRunnerPanel';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const CONFIG_FILE_PATTERNS = [
-    '**/task-runner.config.json',
-    '**/.vscode/task-runner.config.json'
-];
-
-const PDSL_FILE_PATTERNS = [
-    '**/.ai-assist/*.pdsl'
-];
-
-async function findPdslFiles(workspaceFolder: vscode.WorkspaceFolder): Promise<vscode.Uri[]> {
-    let pdslFiles: vscode.Uri[] = [];
-    
-    for (const pattern of PDSL_FILE_PATTERNS) {
-        const files = await vscode.workspace.findFiles(
-            new vscode.RelativePattern(workspaceFolder, pattern)
-        );
-        pdslFiles = pdslFiles.concat(files);
-    }
-    
-    return pdslFiles;
-}
-
-async function loadPdslContent(uri: vscode.Uri): Promise<any> {
-    try {
-        const content = await fs.promises.readFile(uri.fsPath, 'utf-8');
-        return JSON.parse(content);
-    } catch (error) {
-        console.error(`Fejl ved indlæsning af PDSL fil ${uri.fsPath}:`, error);
-        return null;
-    }
-}
-
 export function activate(context: vscode.ExtensionContext) {
-    console.log('==========================================');
     console.log('Task Runner Dashboard: Aktivering starter');
-    console.log('Task Runner Dashboard er nu aktiveret');
 
-    let disposable = vscode.commands.registerCommand('taskRunnerDashboard.open', async () => {
-        await TaskRunnerPanel.createOrShow(context.extensionUri);
-    });
+    // Registrer view provider
+    const provider = new TaskRunnerViewProvider(context.extensionUri);
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(
+            'taskRunnerDashboard',
+            provider,
+            {
+                webviewOptions: {
+                    retainContextWhenHidden: true
+                }
+            }
+        )
+    );
 
-    context.subscriptions.push(disposable);
+    // Gem state når VS Code lukkes
+    context.subscriptions.push(
+        vscode.workspace.onDidChangeConfiguration(async () => {
+            await provider.saveState();
+        })
+    );
+
     console.log('Task Runner Dashboard: Aktivering færdig');
-    console.log('==========================================');
+}
+
+class TaskRunnerViewProvider implements vscode.WebviewViewProvider {
+    private _view?: vscode.WebviewView;
+    private _taskRunnerPanel?: TaskRunnerPanel;
+
+    constructor(private readonly _extensionUri: vscode.Uri) {}
+
+    public async resolveWebviewView(
+        webviewView: vscode.WebviewView,
+        context: vscode.WebviewViewResolveContext,
+        _token: vscode.CancellationToken
+    ) {
+        this._view = webviewView;
+
+        // Konfigurer webview
+        webviewView.webview.options = {
+            enableScripts: true,
+            localResourceRoots: [this._extensionUri]
+        };
+
+        // Opret eller gendan panel
+        if (!this._taskRunnerPanel) {
+            this._taskRunnerPanel = await TaskRunnerPanel.createOrShow(this._extensionUri, webviewView.webview);
+        } else {
+            await this._taskRunnerPanel.update();
+        }
+    }
+
+    public async saveState() {
+        if (this._taskRunnerPanel) {
+            await this._taskRunnerPanel.saveState();
+        }
+    }
 }
 
 export function deactivate() {

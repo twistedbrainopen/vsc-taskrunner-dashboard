@@ -14,7 +14,23 @@ exports.icons = {
     'check': '✔️'
 };
 function getIconHtml(iconName) {
-    return exports.icons[iconName] || '▶️';
+    // Konverter vores icon navne til Codicon navne
+    const codiconMap = {
+        'package': 'package',
+        'tools': 'tools',
+        'eye': 'eye',
+        'play': 'play',
+        'books': 'book',
+        'check': 'check',
+        'report': 'graph',
+        'docs': 'book',
+        'clean': 'clear-all',
+        'update': 'sync',
+        'lint': 'wand',
+        'pdsl': 'file-code'
+    };
+    const codiconName = codiconMap[iconName] || 'symbol-misc'; // Fallback ikon
+    return `<i class="codicon codicon-${codiconName}"></i>`;
 }
 exports.getIconHtml = getIconHtml;
 function getAllIcons() {

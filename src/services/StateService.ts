@@ -5,12 +5,14 @@ import * as fs from 'fs';
 export interface ViewState {
     lastViewedPdslFile?: string;
     lastScrollPosition: number;
+    pdslViewWasOpen: boolean;
 }
 
 export class StateService {
     private readonly _stateFileName = 'task-runner-state.json';
     private readonly _defaultState: ViewState = {
-        lastScrollPosition: 0
+        lastScrollPosition: 0,
+        pdslViewWasOpen: false
     };
 
     constructor(private readonly _workspaceRoot?: string) {}

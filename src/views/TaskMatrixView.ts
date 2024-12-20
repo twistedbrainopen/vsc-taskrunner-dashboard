@@ -8,6 +8,12 @@ export class TaskMatrixView {
     public render(categories: { [key: string]: CategoryConfig }): string {
         return `
             <div class="task-matrix-container">
+                <div class="header-section">
+                    <button class="pdsl-button" onclick="openPdslView()">
+                        <i class="codicon codicon-file-code"></i>
+                        <span class="button-label">PDSL View</span>
+                    </button>
+                </div>
                 ${this._renderCategories(categories)}
                 ${ReportButton.render()}
             </div>
@@ -28,12 +34,52 @@ export class TaskMatrixView {
 
     public getStyles(): string {
         return `
+            @import url("https://cdn.jsdelivr.net/npm/@vscode/codicons/dist/codicon.css");
+
             /* Task Matrix Container */
             .task-matrix-container {
                 padding: 16px;
                 display: flex;
                 flex-direction: column;
                 position: relative;
+            }
+
+            /* Header Section */
+            .header-section {
+                margin-bottom: 16px;
+            }
+
+            .pdsl-button {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                height: 32px;
+                padding: 0 12px;
+                background: var(--vscode-button-background);
+                color: var(--vscode-button-foreground);
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                font-size: 12px;
+            }
+
+            .pdsl-button:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+
+            .pdsl-button .button-label {
+                font-weight: 500;
+            }
+
+            /* Codicon Styling */
+            .codicon {
+                font-size: 16px;
+                line-height: 16px;
+                display: inline-block;
+                vertical-align: middle;
             }
 
             /* Category Styling */
@@ -74,14 +120,10 @@ export class TaskMatrixView {
             }
 
             /* Custom Tooltip */
-            .task-button:hover::after {
-                content: attr(data-tooltip);
+            .tooltip {
                 position: absolute;
-                bottom: 100%;
-                left: 50%;
-                transform: translateX(-50%);
                 white-space: pre;
-                background-color: var(--vscode-editor-background);
+                background: var(--vscode-editor-background);
                 color: var(--vscode-foreground);
                 padding: 8px;
                 border-radius: 4px;
@@ -93,30 +135,11 @@ export class TaskMatrixView {
                 text-align: left;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.3);
                 pointer-events: none;
-                margin-bottom: 8px;
-                backdrop-filter: blur(8px);
-                -webkit-backdrop-filter: blur(8px);
-                background: rgba(30, 30, 30, 0.95);
-            }
-
-            /* Ensure tooltip stays within viewport */
-            .task-button:first-child:hover::after {
-                left: 0;
-                transform: none;
-            }
-
-            .task-button:last-child:hover::after {
-                left: auto;
-                right: 0;
-                transform: none;
-            }
-
-            .task-button:active {
-                transform: translateY(0);
+                background-color: rgba(30, 30, 30, 0.98);
             }
             
-            .task-icon {
-                font-size: 14px;
+            .task-button:active {
+                transform: translateY(0);
             }
 
             /* Report Section */
@@ -147,10 +170,6 @@ export class TaskMatrixView {
                 box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             }
 
-            .report-button .task-icon {
-                font-size: 14px;
-            }
-
             .report-button .task-label {
                 font-weight: 500;
             }
@@ -174,10 +193,61 @@ export class TaskMatrixView {
                 });
             }
 
-            // Track mouse position for tooltips
-            document.addEventListener('mousemove', function(e) {
-                document.documentElement.style.setProperty('--tooltip-x', e.clientX + 'px');
-                document.documentElement.style.setProperty('--tooltip-y', e.clientY + 'px');
+            function openPdslView() {
+                vscode.postMessage({
+                    command: 'openPdslView'
+                });
+            }
+
+            // Intelligent tooltip positionering
+            document.querySelectorAll('.task-button').forEach(button => {
+                button.addEventListener('mouseenter', (e) => {
+                    const tooltip = button.querySelector('.tooltip');
+                    if (!tooltip) {
+                        const newTooltip = document.createElement('div');
+                        newTooltip.className = 'tooltip';
+                        newTooltip.textContent = button.getAttribute('data-tooltip');
+                        
+                        // Tilføj tooltip til container i stedet for knappen
+                        const container = document.querySelector('.task-matrix-container');
+                        container.appendChild(newTooltip);
+
+                        // Beregn positioner
+                        const buttonRect = button.getBoundingClientRect();
+                        const tooltipRect = newTooltip.getBoundingClientRect();
+                        const containerRect = container.getBoundingClientRect();
+
+                        // Beregn position relativt til container
+                        let top = buttonRect.top - containerRect.top - tooltipRect.height - 8;
+                        let left = buttonRect.left - containerRect.left + (buttonRect.width - tooltipRect.width) / 2;
+
+                        // Tjek om tooltip går ud over venstre kant
+                        if (left < 8) {
+                            left = 8;
+                        }
+                        
+                        // Tjek om tooltip går ud over højre kant
+                        if (left + tooltipRect.width > containerRect.width - 8) {
+                            left = containerRect.width - tooltipRect.width - 8;
+                        }
+
+                        // Tjek om tooltip går ud over top
+                        if (top < 8) {
+                            // Vis tooltip under knappen i stedet
+                            top = buttonRect.top - containerRect.top + buttonRect.height + 8;
+                        }
+
+                        newTooltip.style.top = top + 'px';
+                        newTooltip.style.left = left + 'px';
+                    }
+                });
+
+                button.addEventListener('mouseleave', () => {
+                    const tooltip = document.querySelector('.tooltip');
+                    if (tooltip) {
+                        tooltip.remove();
+                    }
+                });
             });
         `;
     }

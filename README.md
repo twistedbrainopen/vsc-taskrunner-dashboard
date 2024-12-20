@@ -1,4 +1,8 @@
-# Task Runner Dashboard VSCode Extension
+# Task Runner Dashboard
+
+![Task Runner Dashboard](media/Task%20Runner%20Dashboard.png)
+
+En moderne, visuel task runner integreret i VS Code der gør det nemt at organisere og køre udviklings-tasks.
 
 ## Projekt Struktur
 Task Runner Dashboard er en VSCode extension designet til at visualisere og interagere med DSL (Domain Specific Language) filer, der bruges i AI-assisteret udvikling. Extensionen fungerer som en bro mellem AI assistenter (som Cursor AI) og udvikleren ved at:

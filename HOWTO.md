@@ -18,20 +18,20 @@ npm install
 ```
 
 ### 2. Åbn Dashboard
-1. Cmd + Shift + P
-2. Søg: "Task Runner: Åbn Dashboard"
-3. Dashboard åbner i en sidebar
-
-**Bemærk:** Task Runner Dashboard er en del af projekt setup'et og kræver ikke separat installation.
+Task Runner Dashboard er nu integreret i VSCode's aktivitetsbar (venstre side):
+1. Klik på Task Runner ikonet i aktivitetsbar
+2. Dashboard åbner i sidepanelet
+3. Klik på "PDSL View" for at åbne PDSL visningen
 
 ## Daglig Brug
 
 ### Grid Layout
-Task Runner Dashboard viser nu alle tasks i et responsivt grid layout:
-- Hver kategori vises som et kort
-- Tasks er organiseret i kategorier
+Task Runner Dashboard viser alle tasks i et responsivt grid layout:
+- Hver kategori vises som en sektion med task knapper
+- Tasks er organiseret i kategorier med konsistente farver
 - Grid tilpasser sig automatisk vinduets størrelse
-- Hover effekter viser interaktive muligheder
+- Hover effekter viser tooltips med task detaljer
+- Moderne VS Code Codicons for alle knapper og funktioner
 
 ### Konfigurer Tasks
 1. Åbn `.vscode/task-runner.config.json`
@@ -52,265 +52,115 @@ Task Runner Dashboard viser nu alle tasks i et responsivt grid layout:
                         "label": "Start Dev Server",
                         "command": "npm run dev",
                         "icon": "play",
+                        "tooltip": "Start development server",
                         "color": "#4CAF50"
                     },
                     {
                         "id": "lint",
                         "label": "Lint Code",
                         "command": "npm run lint",
-                        "icon": "check",
+                        "icon": "wand",
+                        "tooltip": "Run ESLint",
                         "color": "#FFC107"
                     }
                 ]
-            },
-            "test": {
-                "name": "Test",
-                "tasks": [
-                    {
-                        "id": "test",
-                        "label": "Run Tests",
-                        "command": "npm test",
-                        "icon": "beaker",
-                        "color": "#2196F3"
-                    },
-                    {
-                        "id": "test-watch",
-                        "label": "Test Watch",
-                        "command": "npm run test:watch",
-                        "icon": "eye",
-                        "color": "#03A9F4"
-                    }
-                ]
-            },
-            "build": {
-                "name": "Build",
-                "tasks": [
-                    {
-                        "id": "build",
-                        "label": "Production Build",
-                        "command": "npm run build",
-                        "icon": "package",
-                        "color": "#9C27B0"
-                    },
-                    {
-                        "id": "analyze",
-                        "label": "Bundle Analysis",
-                        "command": "npm run analyze",
-                        "icon": "graph",
-                        "color": "#E91E63"
-                    }
-                ]
             }
         }
     }
 }
 ```
 
-### Web Projekt Setup
-```json
-{
-    "taskRunner": {
-        "categories": {
-            "server": {
-                "name": "Server",
-                "tasks": [
-                    {
-                        "id": "serve",
-                        "label": "Start Server",
-                        "command": "python -m http.server 8000",
-                        "icon": "server",
-                        "color": "#9C27B0"
-                    }
-                ]
-            },
-            "build": {
-                "name": "Build",
-                "tasks": [
-                    {
-                        "id": "sass",
-                        "label": "Compile SASS",
-                        "command": "sass src/styles:dist/css --watch",
-                        "icon": "brush",
-                        "color": "#FF4081"
-                    }
-                ]
-            }
-        }
-    }
-}
-```
+### Tilgængelige Codicons
+VS Code's officielle ikoner bruges nu i hele interfacet. Nogle anbefalede ikoner:
 
-### TypeScript Projekt
-```json
-{
-    "taskRunner": {
-        "categories": {
-            "compile": {
-                "name": "Compile",
-                "tasks": [
-                    {
-                        "id": "tsc",
-                        "label": "Compile TypeScript",
-                        "command": "tsc",
-                        "icon": "gear",
-                        "color": "#3F51B5"
-                    },
-                    {
-                        "id": "tsc-watch",
-                        "label": "Watch TypeScript",
-                        "command": "tsc -w",
-                        "icon": "eye",
-                        "color": "#7986CB"
-                    }
-                ]
-            },
-            "test": {
-                "name": "Test",
-                "tasks": [
-                    {
-                        "id": "jest",
-                        "label": "Run Tests",
-                        "command": "jest",
-                        "icon": "beaker",
-                        "color": "#4CAF50"
-                    }
-                ]
-            }
-        }
-    }
-}
-```
+**Development:**
+- `play`: Start/kør kommandoer
+- `debug`: Debug sessioner
+- `refresh`: Genstart/reload
+- `terminal`: Terminal kommandoer
 
-### HAXE Projekt
-```json
-{
-    "taskRunner": {
-        "categories": {
-            "build": {
-                "name": "Build",
-                "tasks": [
-                    {
-                        "id": "haxe-build",
-                        "label": "Build HAXE",
-                        "command": "haxe build.hxml",
-                        "icon": "package",
-                        "color": "#FF8F00"
-                    }
-                ]
-            },
-            "test": {
-                "name": "Test",
-                "tasks": [
-                    {
-                        "id": "test",
-                        "label": "Run Tests",
-                        "command": "haxe test.hxml",
-                        "icon": "beaker",
-                        "color": "#00BCD4"
-                    }
-                ]
-            }
-        }
-    }
-}
-```
+**Build & Deploy:**
+- `package`: Build/kompilering
+- `cloud-upload`: Deploy
+- `archive`: Pakker/archives
+- `desktop-download`: Downloads
 
-### Tilgængelige Ikoner
-- `play`: ▶️ Start/kør kommandoer
-- `package`: 📦 Build/kompilering
-- `beaker`: 🧪 Test kommandoer
-- `eye`: 👁️ Watch/monitor
-- `gear`: ⚙️ Konfiguration/setup
-- `graph`: 📊 Rapporter/statistik
-- `server`: 🖥️ Server operationer
-- `brush`: 🎨 Style/design tasks
-- `check`: ✅ Lint/validering
-- `graph`: 📊 Analyse/rapporter
-- `server`: 🖥️ Server
-- `brush`: 🎨 Styling
+**Testing:**
+- `beaker`: Test kommandoer
+- `check`: Validering
+- `bug`: Debug/fejlfinding
+- `pass`: Tests passed
+
+**Monitoring:**
+- `eye`: Watch/monitor
+- `pulse`: Status/aktivitet
+- `graph`: Statistik/metrics
+- `output`: Logs/output
+
+**Tools:**
+- `tools`: Værktøjer
+- `settings-gear`: Konfiguration
+- `extensions`: Plugins/addons
+- `symbol-namespace`: Namespaces
+
+**Files:**
+- `file-code`: Kode filer
+- `file-binary`: Kompilerede filer
+- `library`: Libraries/modules
+- `json`: JSON filer
 
 ### Farve Guide
-- Development: `#4CAF50` (Grøn)
-- Test: `#2196F3` (Blå)
-- Build: `#9C27B0` (Lilla)
-- Lint: `#FFC107` (Gul)
-- Watch: `#03A9F4` (Lys blå)
-- Analyse: `#E91E63` (Pink)
-- Rapport: `#795548` (Brun)
+Brug VS Code's standard farver for konsistens:
+- Primary Actions: `var(--vscode-button-background)`
+- Secondary: `var(--vscode-button-secondaryBackground)`
+- Success: `var(--vscode-testing-iconPassed)` 
+- Warning: `var(--vscode-testing-iconSkipped)`
+- Error: `var(--vscode-testing-iconFailed)`
 
-### Kør Tasks
-1. Klik på task ikonet i sidebaren
-2. Se output i VSCode's integrerede terminal
-3. Status opdateres automatisk
+### UI Elementer
+Task Runner Dashboard bruger nu VS Code's native UI komponenter:
+- Knapper følger VS Code's button styling
+- Tooltips matcher VS Code's native tooltips
+- Ikoner bruger VS Code's Codicon system
+- Farver følger VS Code's tema
 
-### Status Tracking
-Brug Git commits til at tracke status:
-```bash
-# Marker task som færdig
-git commit -m "[DONE] Implementeret login flow"
-
-# Marker task som i gang
-git commit -m "[IN_PROGRESS] Arbejder på database setup"
-
-# Marker task som afventende
-git commit -m "[PENDING] OAuth integration mangler"
-```
-
-### Generer Status Rapport
-1. Klik på rapport ikonet i sidebaren
-2. Rapport åbnes i ny editor
-3. Indeholder:
-   - Samlet status
-   - Færdige tasks
-   - Igangværende arbejde
-   - Kommende opgaver
+### Keyboard Navigation
+- Tab: Naviger mellem knapper
+- Space/Enter: Aktiver knap
+- Escape: Luk tooltips
 
 ## Tips & Tricks
 
 ### Effektiv Task Organisering
-- Grupper relaterede tasks i kategorier
-- Brug beskrivende labels
-- Vælg intuitive ikoner
-- Brug konsistente farver for lignende tasks
-
-### Keyboard Shortcuts
-- `Cmd + Shift + P`: Åbn Command Palette
-- `Cmd + K`: Fold/unfold sektioner
-- `Cmd + S`: Gem rapport
+- Brug konsistente ikoner for lignende tasks
+- Vælg ikoner der tydeligt indikerer funktionen
+- Organiser tasks i logiske kategorier
+- Hold tooltips korte og informative
 
 ### Bedste Praksis
-1. **Task Navngivning**
-   - Brug handling + objekt format
-   - Hold det kort og præcist
-   - Eksempel: "Build Project" vs "Kør build process"
+1. **Ikonvalg**
+   - Vælg ikoner der matcher funktionen
+   - Brug samme ikon for lignende tasks
+   - Hold det simpelt og intuitivt
 
-2. **Kategorier**
-   - Hold antallet overskueligt
-   - Brug logisk gruppering
-   - Eksempel kategorier:
-     - Development
-     - Build
-     - Deploy
-     - Test
+2. **Tooltips**
+   - Kort beskrivelse af funktionen
+   - Inkluder kommandoen der køres
+   - Tilføj relevante noter/advarsler
 
-3. **Git Integration**
-   - Brug konsistente status tags
-   - Skriv beskrivende commit messages
-   - Hold commits fokuserede
+3. **Layout**
+   - Grupper relaterede tasks
+   - Brug konsistente farver
+   - Hold grid layout rent og organiseret
 
 ## Fejlfinding
 
-### Problem: Task Kører Ikke
-1. Tjek terminal output
-2. Verificer kommando eksisterer
-3. Tjek rettigheder
+### Problem: Ikoner Vises Ikke
+1. Tjek VS Code version (kræver 1.74.0+)
+2. Verificer at Codicons er tilgængelige
+3. Prøv at genstarte VS Code
 
-### Problem: Status Opdateres Ikke
-1. Tjek Git er initialiseret
-2. Verificer commit format
-3. Prøv at genstarte VSCode
-
-### Problem: Dashboard Vises Ikke
-1. Tjek config fil eksisterer
-2. Verificer JSON syntax
-3. Reload VSCode vindue 
+### Problem: Styling Issues
+1. Tjek VS Code tema kompatibilitet
+2. Verificer CSS variabler
+3. Reload VS Code vindue

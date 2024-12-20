@@ -12,7 +12,24 @@ export const icons: { [key: string]: string } = {
 };
 
 export function getIconHtml(iconName: string): string {
-    return icons[iconName] || '▶️';
+    // Konverter vores icon navne til Codicon navne
+    const codiconMap: { [key: string]: string } = {
+        'package': 'package',
+        'tools': 'tools',
+        'eye': 'eye',
+        'play': 'play',
+        'books': 'book',
+        'check': 'check',
+        'report': 'graph',
+        'docs': 'book',
+        'clean': 'clear-all',
+        'update': 'sync',
+        'lint': 'wand',
+        'pdsl': 'file-code'
+    };
+
+    const codiconName = codiconMap[iconName] || 'symbol-misc'; // Fallback ikon
+    return `<i class="codicon codicon-${codiconName}"></i>`;
 }
 
 export function getAllIcons(): { [key: string]: string } {

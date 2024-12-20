@@ -9,7 +9,8 @@ class StateService {
         this._workspaceRoot = _workspaceRoot;
         this._stateFileName = 'task-runner-state.json';
         this._defaultState = {
-            lastScrollPosition: 0
+            lastScrollPosition: 0,
+            pdslViewWasOpen: false
         };
     }
     async loadState() {

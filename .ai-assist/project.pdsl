@@ -1,82 +1,62 @@
 {
-    "ITERATIONS": {
-        "ITERATION_1": {
-            "name": "Grid Layout Implementation",
-            "status": "DONE",
-            "tasks": [
-                "Implementer responsivt grid layout",
-                "Tilføj hover effekter",
-                "Integrer med VSCode tema"
-            ]
-        },
-        "ITERATION_2": {
-            "name": "Documentation Update",
-            "status": "DONE",
-            "tasks": [
-                "Opdater README.md med grid layout",
-                "Tilføj grid eksempler til HOWTO.md",
-                "Dokumenter nye task config muligheder"
-            ]
-        },
-        "ITERATION_3": {
-            "name": "PDSL View Forbedringer",
-            "description": "UX forbedringer til PDSL view med fokus på brugervenlighed og tilstandshåndtering",
-            "status": "DONE",
-            "tasks": [
-                "Implementer automatisk foldning baseret på status (DONE og PENDING foldes ind)",
-                "Tilføj fold/unfold funktionalitet via pile-ikoner",
-                "Gem og gendan sidste viste PDSL fil mellem sessioner",
-                "Implementer scroll position bevaring",
-                "Tilføj lokal state fil i .vscode mappe"
-            ]
-        },
-        "ITERATION_4": {
-            "name": "Task Matrix Layout",
-            "description": "Redesign af task view med fokus på skalerbar matrix layout og forbedret organisation",
-            "status": "DONE",
-            "tasks": [
-                "Implementer 4x3 matrix layout for task knapper",
-                "Separer rapport funktion til dedikeret område",
-                "Tilføj dynamisk grid expansion for flere tasks",
-                "Optimer knap layout med ikoner og labels",
-                "Implementer responsivt design for matrix grid"
-            ]
-        },
-        "ITERATION_5": {
-            "name": "Kodebase Refaktorering",
-            "description": "Omfattende omstrukturering af kodebasen med fokus på modularitet og vedligeholdelse",
-            "status": "DONE",
-            "tasks": [
-                "Opdel kodebase i logiske moduler",
-                "Implementer dedikerede services",
-                "Opret separate view komponenter",
-                "Tilføj TypeScript interfaces",
-                "Implementer asynkron initialisering"
-            ]
-        },
-        "ITERATION_6": {
-            "name": "Task Matrix Optimering",
-            "description": "Optimering af task matrix visning og interaktion",
-            "status": "DONE",
-            "tasks": [
-                "Kompakt knap layout uden tekst",
-                "Tooltips med task information",
-                "Venstre-aligned grid layout",
-                "Optimeret responsiv visning",
-                "Bred Generate Report knap i bunden"
-            ]
-        },
-        "ITERATION_7": {
-            "name": "PDSL View Genimplementering",
-            "description": "Genimplementering af PDSL view med forbedret struktur og ydeevne",
-            "status": "DONE",
-            "tasks": [
-                "Fix af type-sikkerhed i PDSL parsing",
-                "Genindføring af auto-foldning for DONE/PENDING",
-                "Forbedret status badges med farver",
-                "Optimeret fold/unfold funktionalitet",
-                "Korrekt styling og indrykning"
-            ]
+    "PROJECTS": {
+        "TaskRunnerDashboard": {
+            "name": "Task Runner Dashboard",
+            "status": "IN_PROGRESS",
+            "description": "Visual task runner for development workflows",
+            "components": {
+                "UI": {
+                    "name": "User Interface",
+                    "status": "IN_PROGRESS",
+                    "features": [
+                        "Responsive grid layout for tasks",
+                        "VS Code Codicon integration for modern look",
+                        "Native VS Code styling og themes",
+                        "Intelligent tooltip system",
+                        "Pinned sidebar integration",
+                        "PDSL View i editor området"
+                    ]
+                },
+                "TaskRunner": {
+                    "name": "Task Runner Core",
+                    "status": "DONE",
+                    "features": [
+                        "Konfiguerbar via JSON",
+                        "Kategori-baseret task organisering",
+                        "Integreret terminal output",
+                        "State persistence mellem sessioner"
+                    ]
+                },
+                "PDSLViewer": {
+                    "name": "PDSL Viewer",
+                    "status": "DONE",
+                    "features": [
+                        "Tree-baseret PDSL visning",
+                        "Syntax highlighting",
+                        "Fold/unfold sektioner",
+                        "Status badges og ikoner"
+                    ]
+                }
+            },
+            "design_principles": [
+                "Følg VS Code's design sprog",
+                "Brug native VS Code komponenter",
+                "Konsistent ikonografi med Codicons",
+                "Intuitiv og effektiv UX"
+            ],
+            "tech_stack": {
+                "frontend": [
+                    "VS Code Webview API",
+                    "VS Code Codicons",
+                    "TypeScript",
+                    "CSS Variables"
+                ],
+                "backend": [
+                    "VS Code Extension API",
+                    "Node.js",
+                    "TypeScript"
+                ]
+            }
         }
     }
 }
