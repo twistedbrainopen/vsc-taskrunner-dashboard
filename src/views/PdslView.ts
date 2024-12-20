@@ -13,7 +13,7 @@ export class PdslView {
         return `
             <div class="pdsl-content">
                 <select class="pdsl-dropdown" onchange="showPdslContent(this.value)">
-                    <option value="">Select a PDSL file to view</option>
+                    <option value="">Vælg en PDSL fil</option>
                     ${this.renderFileOptions(files)}
                 </select>
                 <div id="pdsl-content-view"></div>
@@ -22,13 +22,29 @@ export class PdslView {
     }
 
     public renderFileOptions(files: PdslFile[]): string {
-        return files
+        // Sorter filer efter placering (.ai-assist først) og navn
+        const sortedFiles = [...files].sort((a, b) => {
+            const aInAiAssist = a.path.includes('.ai-assist');
+            const bInAiAssist = b.path.includes('.ai-assist');
+            if (aInAiAssist !== bInAiAssist) {
+                return aInAiAssist ? -1 : 1;
+            }
+            return a.path.localeCompare(b.path);
+        });
+
+        return sortedFiles
             .filter(file => file.selected)
-            .map(file => `
-                <option value="${file.path}">
-                    ${file.path}
-                </option>
-            `).join('');
+            .map(file => {
+                const isAiAssist = file.path.includes('.ai-assist');
+                const fileName = file.path.split('/').pop() || file.path;
+                const folderPath = file.path.replace(fileName, '').replace(/\/$/, '');
+                
+                return `
+                    <option value="${file.path}">
+                        ${fileName} ${folderPath ? `(${isAiAssist ? '.ai-assist' : folderPath})` : ''}
+                    </option>
+                `;
+            }).join('');
     }
 
     public getClientScript(lastScrollPosition: number, lastViewedFile?: string): string {
@@ -109,23 +125,38 @@ export class PdslView {
         return `
             .pdsl-content {
                 height: 100%;
+                padding: 16px;
             }
 
             .pdsl-dropdown {
                 width: 100%;
-                padding: 8px;
+                padding: 8px 12px;
                 margin-bottom: 16px;
                 background: var(--vscode-dropdown-background);
                 color: var(--vscode-dropdown-foreground);
                 border: 1px solid var(--vscode-dropdown-border);
                 border-radius: 4px;
                 outline: none;
+                font-size: 14px;
+                cursor: pointer;
+            }
+
+            .pdsl-dropdown:hover {
+                border-color: var(--vscode-focusBorder);
+            }
+
+            .pdsl-dropdown:focus {
+                border-color: var(--vscode-focusBorder);
+                outline: 1px solid var(--vscode-focusBorder);
+                outline-offset: -1px;
             }
 
             #pdsl-content-view {
                 height: calc(100vh - 140px);
                 overflow-y: auto;
                 padding: 16px;
+                background: var(--vscode-editor-background);
+                border-radius: 4px;
             }
 
             .fold-toggle {

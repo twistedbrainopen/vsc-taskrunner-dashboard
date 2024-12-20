@@ -1,0 +1,32 @@
+{
+    "taskRunner": {
+        "categories": {
+            "build": {
+                "label": "Build",
+                "description": "Build relaterede tasks",
+                "tasks": [
+                    {
+                        "id": "build",
+                        "label": "Build Project",
+                        "command": "echo 'Building project...'",
+                        "icon": "package",
+                        "color": "#4EC9B0"
+                    }
+                ]
+            },
+            "test": {
+                "label": "Test",
+                "description": "Test relaterede tasks",
+                "tasks": [
+                    {
+                        "id": "test",
+                        "label": "Run Tests",
+                        "command": "echo 'Running tests...'",
+                        "icon": "beaker",
+                        "color": "#007ACC"
+                    }
+                ]
+            }
+        }
+    }
+}
