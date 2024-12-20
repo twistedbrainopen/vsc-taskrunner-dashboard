@@ -95,34 +95,18 @@ Task Runner Dashboard er en VSCode extension designet til at visualisere og inte
 
 ## Installation
 
-### Hent Scripts
-Download installations- og opdaterings-scripts direkte fra repository:
+### Installation og Opdatering
+Installations- og opdaterings-scripts findes i `/src` mappen:
 ```bash
-svn export https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/trunk/scripts
-chmod +x scripts/trdInstall.sh scripts/trdUpdate.sh
+# Gør scripts eksekverbare
+chmod +x src/trdInstall.sh src/trdUpdate.sh
+
+# Installer Task Runner
+./src/trdInstall.sh
+
+# Opdater når der er en ny version
+./src/trdUpdate.sh
 ```
-
-### Installer Task Runner
-Kør installations-scriptet:
-```bash
-./scripts/trdInstall.sh
-```
-
-## Opdatering
-Når der er en ny version tilgængelig, kør opdaterings-scriptet:
-```bash
-./scripts/trdUpdate.sh
-```
-
-### Script Placering
-Scriptsne placeres i en `scripts` mappe i dit projekt:
-- `scripts/trdInstall.sh`: Installation af Task Runner
-- `scripts/trdUpdate.sh`: Opdatering til nyeste version
-
-Dette gør det nemt at:
-1. Vedligeholde scripts i projektet
-2. Køre opdateringer når det er nødvendigt
-3. Have scripts tilgængelige for hele teamet
 
 ## Konfiguration
 Task Runner Dashboard konfigureres via `.vscode/task-runner.config.json`. Her er et eksempel:
@@ -261,8 +245,8 @@ PDSL filer integreres automatisk med Task Runner Dashboard:
 - Rapporter genereres baseret på PDSL status
 
 ## Features
-+- Moderne grid-baseret task interface
-+- Responsivt design der tilpasser sig VSCode layout
- - Status tracking (DONE/IN_PROGRESS/PENDING)
- - Automatisk status rapport generering
- - Integration med PDSL projekt filer
+- Moderne grid-baseret task interface
+- Responsivt design der tilpasser sig VSCode layout
+- Status tracking (DONE/IN_PROGRESS/PENDING)
+- Automatisk status rapport generering
+- Integration med PDSL projekt filer
