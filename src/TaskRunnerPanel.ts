@@ -209,20 +209,20 @@ export class TaskRunnerPanel {
                         
                         // Kun fold/unfold for de første to niveauer
                         const isFoldable = level < 2;
-                        const uniqueId = `section-${key}-${Math.random().toString(36).substr(2, 9)}`;
+                        const uniqueId = `section-${level}-${key}-${Math.random().toString(36).substr(2, 9)}`;
                         
                         if (typeof val === 'object' && val !== null) {
                             return `
-                                <div class="pdsl-section">
+                                <div class="pdsl-section" data-level="${level}">
                                     <div class="section-header" 
-                                         onclick="toggleSection('${uniqueId}')"
+                                         onclick="${isFoldable ? `toggleSection('${uniqueId}')` : ''}"
                                          style="
                                             display: flex;
                                             justify-content: space-between;
                                             align-items: center;
                                             padding: 8px;
                                             margin-left: ${level * 16}px;
-                                            cursor: pointer;
+                                            cursor: ${isFoldable ? 'pointer' : 'default'};
                                          "
                                     >
                                         <div style="display: flex; align-items: center;">
@@ -236,7 +236,7 @@ export class TaskRunnerPanel {
                                         </div>
                                         ${statusBadge}
                                     </div>
-                                    <div id="${uniqueId}" class="section-content">
+                                    <div id="${uniqueId}" class="section-content" style="display: block;">
                                         ${formatValue(val, level + 1)}
                                     </div>
                                 </div>
@@ -266,12 +266,16 @@ export class TaskRunnerPanel {
                     display: inline-block;
                     width: 20px;
                     transition: transform 0.2s;
+                    user-select: none;
                 }
                 .section-header {
                     transition: background-color 0.2s;
                 }
                 .section-header:hover {
                     background-color: rgba(255, 255, 255, 0.1);
+                }
+                .section-content {
+                    transition: height 0.2s ease-out;
                 }
             </style>
             <div class="pdsl-content">
@@ -285,12 +289,30 @@ export class TaskRunnerPanel {
                     
                     if (content.style.display === 'none') {
                         content.style.display = 'block';
+                        icon.style.transform = 'rotate(0deg)';
                         icon.textContent = '▼';
                     } else {
                         content.style.display = 'none';
+                        icon.style.transform = 'rotate(-90deg)';
                         icon.textContent = '▶';
                     }
                 }
+
+                // Initialiser fold/unfold tilstand for top-level og første niveau
+                document.addEventListener('DOMContentLoaded', () => {
+                    const sections = document.querySelectorAll('.pdsl-section');
+                    sections.forEach(section => {
+                        const level = parseInt(section.getAttribute('data-level') || '0');
+                        if (level < 2) {
+                            const content = section.querySelector('.section-content');
+                            const icon = section.querySelector('.fold-icon');
+                            if (content && icon) {
+                                content.style.display = 'block';
+                                icon.textContent = '▼';
+                            }
+                        }
+                    });
+                });
             </script>
         `;
     }
