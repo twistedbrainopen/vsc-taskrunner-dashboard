@@ -20,12 +20,13 @@ async function loadPdslContent(uri) {
     }
 }
 class TaskRunnerPanel {
-    constructor(panel, extensionUri, pdslContents) {
+    constructor(panel, extensionUri) {
         this._disposables = [];
-        this._pdslContents = [];
+        this._pdslFiles = [];
         this._panel = panel;
         this._extensionUri = extensionUri;
-        this._pdslContents = pdslContents;
+        // Initialiser PDSL files
+        this.initializePdslFiles();
         // Start med at opdatere panelet
         this.update();
         // Lyt efter WebView beskeder
@@ -52,17 +53,26 @@ class TaskRunnerPanel {
                 case 'refreshTasks':
                     await this.update();
                     break;
+                case 'showPdslContent':
+                    const selectedFile = this._pdslFiles.find(f => f.path === message.path);
+                    if (selectedFile) {
+                        const formattedContent = this._formatPdslContent(selectedFile.content);
+                        this._panel.webview.postMessage({
+                            command: 'updatePdslView',
+                            content: formattedContent
+                        });
+                    }
+                    break;
             }
         }, null, this._disposables);
         // Lyt efter panel lukning
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
     }
-    static createOrShow(extensionUri, pdslContents = []) {
+    static createOrShow(extensionUri) {
         const column = vscode.window.activeTextEditor
             ? vscode.window.activeTextEditor.viewColumn
             : undefined;
         if (TaskRunnerPanel.currentPanel) {
-            TaskRunnerPanel.currentPanel._pdslContents = pdslContents;
             TaskRunnerPanel.currentPanel._panel.reveal(column);
             TaskRunnerPanel.currentPanel.update();
             return;
@@ -71,7 +81,7 @@ class TaskRunnerPanel {
             enableScripts: true,
             localResourceRoots: [extensionUri]
         });
-        TaskRunnerPanel.currentPanel = new TaskRunnerPanel(panel, extensionUri, pdslContents);
+        TaskRunnerPanel.currentPanel = new TaskRunnerPanel(panel, extensionUri);
     }
     async update() {
         const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
@@ -79,549 +89,385 @@ class TaskRunnerPanel {
             return;
         // Genindlæs PDSL filer
         const pdslFiles = await findPdslFiles(workspaceFolder);
-        this._pdslContents = await Promise.all(pdslFiles.map(async (uri) => ({
+        this._pdslFiles = await Promise.all(pdslFiles.map(async (uri, index) => ({
+            id: `pdsl-${index}`,
             path: vscode.workspace.asRelativePath(uri),
+            selected: true,
             content: await loadPdslContent(uri)
         })));
         // Opdater webview med både config og PDSL data
         this._panel.webview.html = this._getHtmlForWebview();
     }
     _formatPdslContent(content) {
-        const getStatusBadge = (obj) => {
-            if (obj && obj.status) {
-                const statusColors = {
-                    'DONE': '#4EC9B0',
-                    'IN_PROGRESS': '#007ACC',
-                    'PENDING': '#CF9178' // Varm orange
-                };
-                const status = obj.status;
-                const color = statusColors[status] || 'var(--vscode-badge-foreground)';
-                return `<span class="status-badge" style="background-color: ${color}">${status}</span>`;
-            }
-            return '';
+        const getStatusBadge = (status) => {
+            const statusColors = {
+                'DONE': '#4EC9B0',
+                'IN_PROGRESS': '#007ACC',
+                'PENDING': '#CF9178' // Varm orange
+            };
+            const color = statusColors[status] || 'var(--vscode-badge-foreground)';
+            return `
+                <span class="status-badge" style="
+                    background-color: ${color};
+                    color: #000;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    float: right;
+                    font-size: 12px;
+                    font-weight: 500;
+                ">${status}</span>
+            `;
         };
         const formatValue = (value, level = 0) => {
             if (Array.isArray(value)) {
-                return `<ul class="dsl-list">
-                    ${value.map(item => `<li>${item}</li>`).join('')}
-                </ul>`;
+                return `
+                    <ul class="pdsl-list" style="
+                        list-style-type: disc;
+                        padding-left: 20px;
+                        margin: 8px 0;
+                    ">
+                        ${value.map(item => `
+                            <li style="
+                                color: var(--vscode-foreground);
+                                margin: 4px 0;
+                            ">${item}</li>
+                        `).join('')}
+                    </ul>
+                `;
             }
             if (typeof value === 'object' && value !== null) {
                 return Object.entries(value)
-                    .map(([key, val]) => {
-                    const statusBadge = getStatusBadge(val);
-                    const folderId = `fold-${Math.random().toString(36).substr(2, 9)}`;
-                    if (level === 0) {
+                    .map(entry => {
+                    const [key, val] = entry;
+                    const pdslVal = val;
+                    const statusBadge = pdslVal?.status ? getStatusBadge(pdslVal.status) : '';
+                    // Kun fold/unfold for de første to niveauer
+                    const isFoldable = level < 2;
+                    const uniqueId = `section-${key}-${Math.random().toString(36).substr(2, 9)}`;
+                    if (typeof val === 'object' && val !== null) {
                         return `
-                                <div class="dsl-section">
-                                    <h2 class="foldable" onclick="toggleFold('${folderId}')">
-                                        <span class="fold-icon">▼</span>
-                                        <span class="section-title">${key}</span>
+                                <div class="pdsl-section">
+                                    <div class="section-header" 
+                                         onclick="toggleSection('${uniqueId}')"
+                                         style="
+                                            display: flex;
+                                            justify-content: space-between;
+                                            align-items: center;
+                                            padding: 8px;
+                                            margin-left: ${level * 16}px;
+                                            cursor: pointer;
+                                         "
+                                    >
+                                        <div style="display: flex; align-items: center;">
+                                            ${isFoldable ? '<span class="fold-icon">▼</span>' : ''}
+                                            <span style="
+                                                color: ${level === 0 ? '#4EC9B0' : '#007ACC'};
+                                                font-weight: ${level === 0 ? '600' : '500'};
+                                                font-size: ${level === 0 ? '18px' : '16px'};
+                                                margin-left: 8px;
+                                            ">${key}:</span>
+                                        </div>
                                         ${statusBadge}
-                                    </h2>
-                                    <div id="${folderId}" class="content">
+                                    </div>
+                                    <div id="${uniqueId}" class="section-content">
                                         ${formatValue(val, level + 1)}
                                     </div>
-                                </div>`;
-                    }
-                    if (level === 1) {
-                        return `
-                                <div class="dsl-subsection">
-                                    <h3 class="foldable" onclick="toggleFold('${folderId}')">
-                                        <span class="fold-icon">▼</span>
-                                        <span class="section-title">${key}</span>
-                                        ${statusBadge}
-                                    </h3>
-                                    <div id="${folderId}" class="content">
-                                        ${formatValue(val, level + 1)}
-                                    </div>
-                                </div>`;
+                                </div>
+                            `;
                     }
                     return `
-                            <div class="dsl-item">
-                                <strong>${key}:</strong>
-                                ${typeof val === 'object' ?
-                        `<div class="nested-content">${formatValue(val, level + 1)}</div>` :
-                        `<span class="dsl-value">${val}</span>`}
-                                ${statusBadge}
-                            </div>`;
+                            <div class="pdsl-item" style="margin-left: ${level * 16}px;">
+                                <span style="color: var(--vscode-foreground); opacity: 0.8;">
+                                    ${key}:
+                                </span>
+                                <span style="margin-left: 8px; color: var(--vscode-foreground);">
+                                    ${val}
+                                </span>
+                            </div>
+                        `;
                 })
                     .join('\n');
             }
-            return `<span class="dsl-value">${String(value)}</span>`;
+            return `<span style="color: var(--vscode-foreground)">${String(value)}</span>`;
         };
-        return `<div class="dsl-content">${formatValue(content)}</div>`;
+        return `
+            <style>
+                .fold-icon {
+                    display: inline-block;
+                    width: 20px;
+                    transition: transform 0.2s;
+                }
+                .section-header {
+                    transition: background-color 0.2s;
+                }
+                .section-header:hover {
+                    background-color: rgba(255, 255, 255, 0.1);
+                }
+            </style>
+            <div class="pdsl-content">
+                ${formatValue(content)}
+            </div>
+            <script>
+                function toggleSection(id) {
+                    const content = document.getElementById(id);
+                    const header = content.previousElementSibling;
+                    const icon = header.querySelector('.fold-icon');
+                    
+                    if (content.style.display === 'none') {
+                        content.style.display = 'block';
+                        icon.textContent = '▼';
+                    } else {
+                        content.style.display = 'none';
+                        icon.textContent = '▶';
+                    }
+                }
+            </script>
+        `;
     }
     _getHtmlForWebview() {
         return `
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Task Runner Dashboard</title>
                 <style>
+                    :root {
+                        --grid-gap: 12px;
+                        --card-radius: 6px;
+                    }
+                    
                     body {
-                        padding: 0;
-                        margin: 0;
-                        font-family: var(--vscode-font-family);
+                        padding: var(--grid-gap);
                         color: var(--vscode-editor-foreground);
-                        display: flex;
-                        flex-direction: column;
-                        height: 100vh;
-                    }
-                    .nav-menu {
+                        font-family: var(--vscode-font-family);
                         background: var(--vscode-editor-background);
-                        padding: 10px;
-                        border-bottom: 1px solid var(--vscode-panel-border);
-                        position: sticky;
-                        top: 0;
-                        z-index: 100;
                     }
-                    .main-container {
-                        display: flex;
-                        flex: 1;
-                        overflow: hidden;
-                        position: relative;
+                    
+                    .task-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                        gap: var(--grid-gap);
+                        padding: var(--grid-gap);
+                        max-width: 1200px;
+                        margin: 0 auto;
                     }
-                    .task-sidebar {
-                        width: 125px;
-                        min-width: 80px;
-                        max-width: 300px;
+                    
+                    .category-section {
                         background: var(--vscode-sideBar-background);
-                        border-right: 1px solid var(--vscode-panel-border);
-                        overflow-y: auto;
-                        padding: 8px;
-                        flex-shrink: 0;
+                        border-radius: var(--card-radius);
+                        padding: var(--grid-gap);
+                        border: 1px solid var(--vscode-panel-border);
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                     }
-                    .resize-handle {
-                        width: 5px;
-                        cursor: ew-resize;
-                        position: absolute;
-                        top: 0;
-                        bottom: 0;
-                        left: 125px;
-                        background: transparent;
-                        transition: background 0.2s;
-                    }
-                    .resize-handle:hover {
-                        background: var(--vscode-scrollbarSlider-hoverBackground);
-                    }
-                    .resize-handle.dragging {
-                        background: var(--vscode-scrollbarSlider-activeBackground);
-                    }
-                    .task-category {
-                        margin-bottom: 15px;
-                    }
+                    
                     .category-title {
-                        font-size: 11px;
-                        font-weight: bold;
-                        padding: 4px;
-                        color: var(--vscode-sideBarTitle-foreground);
+                        font-size: 13px;
+                        font-weight: 600;
+                        margin-bottom: 12px;
+                        color: var(--vscode-foreground);
+                        padding-bottom: 8px;
+                        border-bottom: 1px solid var(--vscode-panel-border);
                         text-transform: uppercase;
+                        letter-spacing: 0.5px;
                     }
+                    
                     .task-button {
                         display: flex;
                         align-items: center;
-                        justify-content: center;
-                        width: calc(100% - 4px);
-                        height: 28px;
-                        margin: 2px;
-                        padding: 0;
+                        width: 100%;
+                        padding: 8px 12px;
+                        margin: 6px 0;
                         border: none;
-                        border-radius: 3px;
+                        border-radius: 4px;
                         background: var(--vscode-button-background);
                         color: var(--vscode-button-foreground);
                         cursor: pointer;
-                        overflow: hidden;
-                    }
-                    .task-button:hover {
-                        background: var(--vscode-button-hoverBackground);
-                    }
-                    .task-icon {
-                        font-size: 14px;
-                    }
-                    .task-label {
-                        display: none;
-                        font-size: 11px;
-                        margin-left: 4px;
-                    }
-                    .task-sidebar:hover .task-label {
-                        display: inline;
-                    }
-                    .content-area {
-                        flex: 1;
-                        overflow-y: auto;
-                        padding: 20px;
-                    }
-                    .nav-menu a {
-                        color: var(--vscode-textLink-foreground);
-                        text-decoration: none;
-                        padding: 5px 15px;
-                        margin: 0 5px;
-                        border-radius: 3px;
-                    }
-                    .nav-menu a:hover {
-                        background: var(--vscode-textLink-activeForeground);
-                        color: var(--vscode-editor-background);
-                    }
-                    .controls {
-                        position: sticky;
-                        top: 42px;
-                        background: var(--vscode-editor-background);
-                        padding: 8px 10px;
-                        border-bottom: 1px solid var(--vscode-panel-border);
-                        display: flex;
-                        gap: 8px;
-                        z-index: 99;
-                    }
-                    .control-button {
-                        padding: 4px 10px;
-                        color: var(--vscode-editor-background);
-                        border: none;
-                        border-radius: 3px;
-                        cursor: pointer;
+                        transition: all 0.2s ease;
                         font-size: 12px;
                     }
-                    .control-button:hover {
+                    
+                    .task-button:hover {
+                        transform: translateY(-1px);
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                    }
+                    
+                    .task-button:active {
+                        transform: translateY(0);
+                    }
+                    
+                    .task-icon {
+                        font-size: 16px;
+                        margin-right: 8px;
                         opacity: 0.9;
                     }
-                    .control-button.all {
-                        background: var(--vscode-button-background);
-                    }
-                    .control-button.done {
-                        background: #4EC9B0;
-                    }
-                    .control-button.pending {
-                        background: #CF9178;
-                    }
-                    .control-button.in-progress {
-                        background: #007ACC;
-                    }
-                    .pdsl-file {
-                        display: none;
-                        padding: 20px;
-                    }
-                    .pdsl-file.active {
-                        display: block;
-                    }
-                    .pdsl-content {
-                        max-width: 1200px;
-                        margin: 0 auto;
-                    }
-                    .section {
-                        margin: 10px 0;
-                    }
-                    h2, h3 {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        margin: 0;
-                        padding: 8px 0;
-                    }
-                    h2 {
-                        color: var(--vscode-textLink-foreground);
-                        border-bottom: 1px solid var(--vscode-panel-border);
-                        margin-top: 20px;
-                    }
-                    h3 {
-                        color: var(--vscode-textPreformat-foreground);
-                        margin-top: 15px;
-                    }
-                    .section-item {
-                        margin: 8px 0;
-                        padding-left: 20px;
-                        position: relative;
-                    }
-                    .section-item strong {
-                        color: var(--vscode-symbolIcon-variableForeground);
-                    }
-                    .status-badge {
-                        padding: 2px 8px;
-                        border-radius: 3px;
-                        font-size: 12px;
-                        font-weight: bold;
-                        color: var(--vscode-editor-background);
-                        text-transform: uppercase;
-                    }
-                    .fold-icon {
-                        display: inline-block;
-                        margin-right: 8px;
-                        transition: transform 0.2s;
-                        font-size: 0.8em;
-                        color: var(--vscode-textLink-foreground);
-                    }
-                    .foldable {
-                        cursor: pointer;
-                        user-select: none;
-                    }
-                    .foldable:hover {
-                        opacity: 0.8;
-                    }
-                    .folded .fold-icon {
-                        transform: rotate(-90deg);
-                    }
-                    .folded + .content {
-                        display: none;
-                    }
-                    .content {
-                        padding-left: 20px;
-                    }
-                    .dsl-content {
-                        font-family: var(--vscode-editor-font-family);
-                        line-height: 1.6;
-                    }
-                    .dsl-section, .dsl-subsection {
-                        margin: 1em 0;
-                    }
-                    .dsl-list {
-                        list-style-type: none;
-                        padding-left: 1.5em;
-                        margin: 0.5em 0;
-                    }
-                    .dsl-list li {
-                        position: relative;
-                        padding: 0.2em 0;
-                    }
-                    .dsl-list li:before {
-                        content: "•";
-                        color: var(--vscode-textLink-foreground);
-                        position: absolute;
-                        left: -1em;
-                    }
-                    .dsl-item {
-                        padding: 0.3em 0;
-                        margin-left: 1em;
-                    }
-                    .dsl-value {
-                        color: var(--vscode-textPreformat-foreground);
-                        margin-left: 0.5em;
-                    }
-                    .nested-content {
-                        margin-left: 1em;
-                        margin-top: 0.5em;
-                        padding-left: 1em;
-                        border-left: 1px solid var(--vscode-panel-border);
-                    }
-                    .section-title {
+                    
+                    .task-label {
                         flex: 1;
-                        margin-right: 1em;
+                        text-align: left;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
                     }
-                    .task-page {
-                        display: none;
-                        padding: 20px;
-                        max-width: 1200px;
-                        margin: 0 auto;
-                    }
-                    .task-page.active {
-                        display: block;
-                    }
-                    .task-list {
-                        display: flex;
-                        flex-direction: column;
-                        gap: 10px;
-                        margin-top: 20px;
-                    }
-                    .task-item {
-                        display: flex;
-                        align-items: center;
-                        padding: 12px;
+                    
+                    .pdsl-selector {
+                        position: fixed;
+                        top: 0;
+                        right: 0;
                         background: var(--vscode-editor-background);
-                        border: 1px solid var(--vscode-panel-border);
+                        padding: 12px;
+                        border-left: 1px solid var(--vscode-panel-border);
+                        border-bottom: 1px solid var(--vscode-panel-border);
+                        border-bottom-left-radius: var(--card-radius);
+                        box-shadow: -2px 2px 4px rgba(0,0,0,0.1);
+                    }
+                    
+                    .pdsl-selector-toggle {
+                        position: fixed;
+                        top: 12px;
+                        right: 12px;
+                        padding: 6px;
+                        background: var(--vscode-button-background);
+                        border: none;
                         border-radius: 4px;
+                        color: var(--vscode-button-foreground);
                         cursor: pointer;
+                        z-index: 1000;
                     }
-                    .task-item:hover {
-                        background: var(--vscode-list-hoverBackground);
+                    
+                    .pdsl-file-list {
+                        max-height: 300px;
+                        overflow-y: auto;
+                        margin-top: 8px;
                     }
-                    .task-icon {
-                        font-size: 18px;
-                        margin-right: 12px;
-                    }
-                    .task-content {
-                        flex: 1;
-                    }
-                    .task-title {
-                        font-weight: bold;
-                        margin-bottom: 4px;
-                    }
-                    .task-description {
-                        font-size: 12px;
-                        color: var(--vscode-descriptionForeground);
-                    }
-                    .task-status {
-                        padding: 4px 8px;
-                        border-radius: 3px;
-                        font-size: 12px;
-                        font-weight: bold;
-                    }
-                    .task-actions {
+                    
+                    .pdsl-file-item {
                         display: flex;
-                        gap: 8px;
-                        margin-left: 12px;
+                        align-items: center;
+                        padding: 4px 0;
                     }
-                    .task-action-button {
-                        padding: 4px 8px;
+                    
+                    .pdsl-checkbox {
+                        margin-right: 8px;
+                    }
+                    
+                    .pdsl-filename {
+                        font-size: 12px;
+                        color: var(--vscode-foreground);
+                    }
+                    
+                    .nav-menu {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        height: 40px;
+                        background: var(--vscode-editor-background);
+                        border-bottom: 1px solid var(--vscode-panel-border);
+                        display: flex;
+                        align-items: center;
+                        padding: 0 16px;
+                        z-index: 1000;
+                        gap: 16px;
+                    }
+                    
+                    .nav-item {
+                        padding: 8px 16px;
+                        cursor: pointer;
+                        color: var(--vscode-foreground);
+                        border-radius: 4px;
+                    }
+                    
+                    .nav-item.active {
                         background: var(--vscode-button-background);
                         color: var(--vscode-button-foreground);
-                        border: none;
-                        border-radius: 3px;
-                        cursor: pointer;
                     }
-                    .task-action-button:hover {
-                        background: var(--vscode-button-hoverBackground);
+                    
+                    .pdsl-dropdown {
+                        flex: 1;
+                        padding: 4px 8px;
+                        background: var(--vscode-dropdown-background);
+                        color: var(--vscode-dropdown-foreground);
+                        border: 1px solid var(--vscode-dropdown-border);
+                        border-radius: 4px;
+                        display: none;
+                    }
+                    
+                    .pdsl-view .pdsl-dropdown {
+                        display: block;
+                    }
+                    
+                    .content-area {
+                        margin-top: 48px;
+                        padding: 16px;
+                    }
+                    
+                    .view {
+                        display: none;
+                    }
+                    
+                    .view.active {
+                        display: block;
                     }
                 </style>
             </head>
             <body>
-                <div class="nav-menu">
-                    ${this._pdslContents.map((pdsl, index) => `
-                        <a href="#" onclick="showFile(${index})">${path.basename(pdsl.path)}</a>
-                    `).join('')}
-                </div>
+                <nav class="nav-menu">
+                    <div class="nav-item active" onclick="switchView('tasks')">Tasks</div>
+                    <div class="nav-item" onclick="switchView('pdsl')">PDSL Files</div>
+                    <select class="pdsl-dropdown" onchange="showPdslContent(this.value)">
+                        <option value="">Select a PDSL file to view</option>
+                        ${this._renderPdslFileOptions()}
+                    </select>
+                </nav>
                 
-                <div class="main-container">
-                    <div class="task-sidebar">
-                        ${this._renderTaskSidebar()}
+                <div class="content-area">
+                    <div id="tasks-view" class="view active">
+                        <div class="task-grid">
+                            ${this._renderTaskGrid()}
+                        </div>
                     </div>
-                    <div class="resize-handle"></div>
-                    <div class="content-area">
-                        ${this._pdslContents.map((pdsl, index) => `
-                            <div class="pdsl-file" id="file-${index}">
-                                <div class="pdsl-content">
-                                    ${this._formatPdslContent(pdsl.content)}
-                                </div>
-                            </div>
-                        `).join('')}
+                    
+                    <div id="pdsl-view" class="view">
+                        <div id="pdsl-content-view"></div>
                     </div>
                 </div>
                 
                 <script>
                     const vscode = acquireVsCodeApi();
                     
-                    let allFolded = false;
-                    let statusFoldState = {
-                        'DONE': false,
-                        'IN_PROGRESS': false,
-                        'PENDING': false
-                    };
-
-                    function toggleFold(id) {
-                        const header = document.querySelector(\`[onclick="toggleFold('\${id}')"\`);
-                        header.classList.toggle('folded');
-                    }
-
-                    function toggleFoldAll() {
-                        allFolded = !allFolded;
-                        document.querySelectorAll('.foldable').forEach(header => {
-                            if (allFolded) {
-                                header.classList.add('folded');
-                            } else {
-                                header.classList.remove('folded');
-                            }
-                        });
-                    }
-
-                    function toggleByStatus(status) {
-                        statusFoldState[status] = !statusFoldState[status];
+                    function switchView(viewName) {
+                        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                         
-                        // Find alle sektioner med den givne status
-                        document.querySelectorAll('.dsl-section, .dsl-subsection').forEach(section => {
-                            const badge = section.querySelector('.status-badge');
-                            if (badge && badge.textContent.trim() === status) {
-                                const header = section.querySelector('.foldable');
-                                if (statusFoldState[status]) {
-                                    header.classList.add('folded');
-                                } else {
-                                    header.classList.remove('folded');
-                                }
-                            }
-                        });
-
-                        // Opdater knappens udseende
-                        const button = document.querySelector(\`.control-button.\${status.toLowerCase()}\`);
-                        button.textContent = statusFoldState[status] ? 
-                            \`Vis \${status}\` : 
-                            \`Skjul \${status}\`;
-                    }
-
-                    function showFile(index) {
-                        document.querySelectorAll('.pdsl-file').forEach(el => {
-                            el.classList.remove('active');
-                        });
-                        document.getElementById('file-' + index).classList.add('active');
+                        document.getElementById(viewName + '-view').classList.add('active');
+                        document.querySelector(\`[onclick="switchView('\${viewName}')"]\`).classList.add('active');
                         
-                        // Reset status fold state når vi skifter fil
-                        statusFoldState = {
-                            'DONE': false,
-                            'IN_PROGRESS': false,
-                            'PENDING': false
-                        };
+                        // Vis/skjul dropdown baseret på view
+                        const dropdown = document.querySelector('.pdsl-dropdown');
+                        dropdown.style.display = viewName === 'pdsl' ? 'block' : 'none';
                     }
 
-                    function showTasks() {
-                        document.querySelectorAll('.pdsl-file, .task-page').forEach(el => {
-                            el.classList.remove('active');
+                    function showPdslContent(path) {
+                        if (!path) return;
+                        vscode.postMessage({
+                            command: 'showPdslContent',
+                            path: path
                         });
-                        document.getElementById('tasks-view').classList.add('active');
                     }
 
-                    function runTask(taskId) {
-                        // Implementer task kørsel her
-                    }
-
-                    // Initialiser første visning
-                    showFile(0);
-
-                    // Tilføj resize functionality
-                    const resizeHandle = document.querySelector('.resize-handle');
-                    const sidebar = document.querySelector('.task-sidebar');
-                    let isResizing = false;
-
-                    resizeHandle.addEventListener('mousedown', (e) => {
-                        isResizing = true;
-                        resizeHandle.classList.add('dragging');
-                        document.addEventListener('mousemove', handleMouseMove);
-                        document.addEventListener('mouseup', stopResize);
-                        e.preventDefault();
+                    window.addEventListener('message', event => {
+                        const message = event.data;
+                        switch (message.command) {
+                            case 'updatePdslView':
+                                document.getElementById('pdsl-content-view').innerHTML = message.content;
+                                break;
+                        }
                     });
-
-                    function handleMouseMove(e) {
-                        if (!isResizing) return;
-                        
-                        const newWidth = e.clientX;
-                        if (newWidth >= 80 && newWidth <= 300) {
-                            sidebar.style.width = newWidth + 'px';
-                            resizeHandle.style.left = newWidth + 'px';
-                        }
-                    }
-
-                    function stopResize() {
-                        isResizing = false;
-                        resizeHandle.classList.remove('dragging');
-                        document.removeEventListener('mousemove', handleMouseMove);
-                        document.removeEventListener('mouseup', stopResize);
-                    }
-
-                    async function handleTaskClick(taskId, command) {
-                        console.log('Task clicked:', taskId, command); // Debug log
-                        
-                        if (command === 'generateReport') {
-                            console.log('Sending generateReport command...'); // Debug log
-                            vscode.postMessage({
-                                command: 'generateReport'
-                            });
-                        } else {
-                            vscode.postMessage({
-                                command: 'runTask',
-                                taskId: taskId
-                            });
-                        }
-                    }
                 </script>
             </body>
             </html>
         `;
     }
-    _renderTaskSidebar() {
+    _renderTaskGrid() {
         const config = {
             taskRunner: {
                 categories: {
@@ -666,7 +512,7 @@ class TaskRunnerPanel {
         };
         return Object.entries(config.taskRunner.categories)
             .map(([categoryId, category]) => `
-                <div class="task-category">
+                <div class="category-section">
                     <div class="category-title">${category.name}</div>
                     ${category.tasks.map((task) => `
                         <button 
@@ -789,7 +635,7 @@ class TaskRunnerPanel {
             recentUpdates: []
         };
         // Analyser PDSL data
-        this._pdslContents.forEach(pdsl => {
+        this._pdslFiles.forEach(pdsl => {
             const traverse = (obj, path = []) => {
                 if (obj?.status) {
                     stats.total++;
@@ -860,6 +706,46 @@ class TaskRunnerPanel {
                 });
             }
         }
+    }
+    _renderPdslFileList() {
+        return this._pdslFiles.map((file) => `
+            <div class="pdsl-file-item">
+                <input 
+                    type="checkbox" 
+                    class="pdsl-checkbox"
+                    id="pdsl-${file.id}"
+                    ${file.selected ? 'checked' : ''}
+                    onchange="togglePdslFile('${file.path}')"
+                >
+                <label class="pdsl-filename" for="pdsl-${file.id}">
+                    ${file.path}
+                </label>
+            </div>
+        `).join('');
+    }
+    async findAllPdslFiles() {
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+        if (!workspaceFolder)
+            return [];
+        return await vscode.workspace.findFiles('**/*.pdsl', '**/node_modules/**');
+    }
+    async initializePdslFiles() {
+        const files = await this.findAllPdslFiles();
+        this._pdslFiles = await Promise.all(files.map(async (uri, index) => ({
+            id: `pdsl-${index}`,
+            path: vscode.workspace.asRelativePath(uri),
+            selected: true,
+            content: await loadPdslContent(uri)
+        })));
+    }
+    _renderPdslFileOptions() {
+        return this._pdslFiles
+            .filter(file => file.selected)
+            .map(file => `
+                <option value="${file.path}">
+                    ${file.path}
+                </option>
+            `).join('');
     }
 }
 exports.TaskRunnerPanel = TaskRunnerPanel;

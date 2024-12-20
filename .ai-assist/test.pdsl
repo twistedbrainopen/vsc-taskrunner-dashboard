@@ -1,0 +1,12 @@
+{
+    "ITERATIONS": {
+        "ITERATION_1": {
+            "name": "Basic Setup",
+            "status": "DONE",
+            "tasks": [
+                "Setup development environment",
+                "Configure initial tasks"
+            ]
+        }
+    }
+}

@@ -30,39 +30,21 @@ async function loadPdslContent(uri) {
     }
 }
 function activate(context) {
+    console.log('==========================================');
+    console.log('Task Runner Dashboard: Aktivering starter');
     console.log('Task Runner Dashboard er nu aktiveret');
     let disposable = vscode.commands.registerCommand('taskRunnerDashboard.open', async () => {
+        console.log('Task Runner Dashboard: Kommando udføres');
         const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
         if (!workspaceFolder) {
             vscode.window.showErrorMessage('Ingen aktiv workspace fundet');
             return;
         }
-        // Find og load PDSL filer
-        const pdslFiles = await findPdslFiles(workspaceFolder);
-        const pdslContents = await Promise.all(pdslFiles.map(async (uri) => ({
-            path: vscode.workspace.asRelativePath(uri),
-            content: await loadPdslContent(uri)
-        })));
-        // Opret eller opdater panel med PDSL data
-        TaskRunnerPanel_1.TaskRunnerPanel.createOrShow(context.extensionUri, pdslContents);
+        TaskRunnerPanel_1.TaskRunnerPanel.createOrShow(context.extensionUri);
     });
     context.subscriptions.push(disposable);
-    // Tjek om der er en aktiv workspace
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-    if (!workspaceFolder) {
-        console.warn('Ingen aktiv workspace fundet');
-        return;
-    }
-    // Opret file watchers for config files
-    const configWatchers = CONFIG_FILE_PATTERNS.map(pattern => vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspaceFolder, pattern)));
-    // Tilføj watchers for PDSL filer
-    const pdslWatchers = PDSL_FILE_PATTERNS.map(pattern => vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspaceFolder, pattern)));
-    [...configWatchers, ...pdslWatchers].forEach(watcher => {
-        watcher.onDidChange(() => {
-            TaskRunnerPanel_1.TaskRunnerPanel.currentPanel?.update();
-        });
-        context.subscriptions.push(watcher);
-    });
+    console.log('Task Runner Dashboard: Aktivering færdig');
+    console.log('==========================================');
 }
 exports.activate = activate;
 function deactivate() {

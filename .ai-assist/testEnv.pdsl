@@ -1,0 +1,87 @@
+{
+    "TEST_ENVIRONMENT": {
+        "name": "Task Runner Dashboard Test Setup",
+        "status": "ACTIVE",
+        "key_learnings": {
+            "activation": {
+                "critical_settings": {
+                    "activationEvents": {
+                        "working": "*",
+                        "not_working": "onStartupFinished",
+                        "notes": "Brug '*' for pålidelig aktivering under udvikling"
+                    },
+                    "package.json": {
+                        "minimal_required": [
+                            "name",
+                            "displayName",
+                            "version",
+                            "engines",
+                            "activationEvents",
+                            "main",
+                            "contributes.commands"
+                        ],
+                        "notes": "Hold package.json simpel under udvikling"
+                    }
+                },
+                "debug_workflow": {
+                    "steps": [
+                        "1. npm run compile",
+                        "2. F5 for debug session",
+                        "3. Tjek Debug Console for aktiverings logs",
+                        "4. Test kommando i nyt VSCode vindue"
+                    ],
+                    "verification": [
+                        "Se efter aktiverings logs i Debug Console",
+                        "Kommando skal være synlig i Command Palette",
+                        "Test funktionalitet efter hver ændring"
+                    ]
+                }
+            },
+            "best_practices": [
+                "Test efter hver betydelig ændring",
+                "Hold extension.ts simpel under udvikling",
+                "Brug Debug Console aktivt til fejlfinding",
+                "Implementer nye features gradvist"
+            ]
+        },
+        "structure": {
+            "task-runner-dashboard": {
+                "type": "main_project",
+                "description": "Hoved extension projekt",
+                "key_files": [
+                    "src/TaskRunnerPanel.ts",
+                    ".vscode/launch.json",
+                    ".vscode/tasks.json"
+                ]
+            },
+            "task-runner-test-workspace": {
+                "type": "test_environment",
+                "description": "Primært test miljø for extension udvikling",
+                "purpose": [
+                    "VSCode debug integration",
+                    "Hot reload testing",
+                    "Extension feature verification"
+                ],
+                "required_files": {
+                    ".vscode/task-runner.config.json": "Task konfiguration",
+                    ".ai-assist/*.pdsl": "PDSL test filer"
+                }
+            }
+        },
+        "debug_workflow": {
+            "steps": [
+                "Åbn task-runner-dashboard i VSCode",
+                "Tryk F5 for at starte debug session",
+                "Extension loader i nyt VSCode vindue med test workspace",
+                "Hot reload aktiveret via watch task"
+            ]
+        },
+        "notes": [
+            "Behold original test workspace for konsistens",
+            "Debug setup er optimeret for udvikling",
+            "Test workspace indeholder realistiske eksempler",
+            "Activation events er kritiske for pålidelig funktion",
+            "Simpel package.json og extension.ts er nøglen til nem debugging"
+        ]
+    }
+} 

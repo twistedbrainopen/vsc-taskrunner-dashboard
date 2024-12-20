@@ -1,15 +1,27 @@
 {
     "taskRunner": {
         "categories": {
-            "build": {
-                "name": "Build",
+            "dev": {
+                "name": "Development",
                 "tasks": [
                     {
-                        "id": "build",
-                        "label": "Build Project",
-                        "command": "npm run build",
-                        "icon": "package",
-                        "color": "#4EC9B0"
+                        "id": "serve",
+                        "label": "Start Server",
+                        "command": "python -m http.server 8000",
+                        "icon": "server",
+                        "color": "#4CAF50"
+                    }
+                ]
+            },
+            "test": {
+                "name": "Test",
+                "tasks": [
+                    {
+                        "id": "test",
+                        "label": "Run Tests",
+                        "command": "npm test",
+                        "icon": "beaker",
+                        "color": "#2196F3"
                     }
                 ]
             }

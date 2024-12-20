@@ -1,44 +1,34 @@
 {
-    "name": "task-runner-dashboard",
-    "displayName": "Task Runner Dashboard",
-    "description": "Interaktiv dashboard for projekt tasks med PDSL integration",
-    "version": "0.0.1",
-    "publisher": "lpmwfx",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/twistedbrainopen/vsc-taskrunner-dashboard"
-    },
-    "engines": {
-        "vscode": "^1.80.0"
-    },
-    "categories": [
-        "Other"
-    ],
-    "activationEvents": [
-        "onStartupFinished"
-    ],
-    "main": "./out/extension.js",
-    "contributes": {
-        "commands": [
-            {
-                "command": "taskRunnerDashboard.open",
-                "title": "Åbn Task Runner Dashboard",
-                "category": "Task Runner"
-            }
-        ]
-    },
-    "scripts": {
-        "vscode:prepublish": "npm run compile",
-        "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "lint": "eslint src --ext ts"
-    },
-    "devDependencies": {
-        "@types/node": "16.x",
-        "@types/vscode": "1.60.0",
-        "@typescript-eslint/eslint-plugin": "5.30.0",
-        "@typescript-eslint/parser": "5.30.0",
-        "eslint": "8.13.0",
-        "typescript": "4.7.2"
-    }
+  "name": "task-runner-dashboard",
+  "displayName": "Task Runner Dashboard",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "taskRunnerDashboard.open",
+        "title": "Task Runner: Åbn Dashboard",
+        "category": "Task Runner"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "vscode:prepublish": "npm run compile",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "16.x",
+    "@types/vscode": "^1.60.0",
+    "@typescript-eslint/eslint-plugin": "^5.30.0",
+    "@typescript-eslint/parser": "^5.30.0",
+    "typescript": "^4.7.2"
+  }
 }

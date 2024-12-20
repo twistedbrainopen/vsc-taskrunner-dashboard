@@ -1,11 +1,21 @@
 {
     "ITERATIONS": {
-        "ITERATION_0": {
-            "name": "Setup",
+        "ITERATION_1": {
+            "name": "Grid Layout Implementation",
+            "status": "DONE",
+            "tasks": [
+                "Implementer responsivt grid layout",
+                "Tilføj hover effekter",
+                "Integrer med VSCode tema"
+            ]
+        },
+        "ITERATION_2": {
+            "name": "Documentation Update",
             "status": "IN_PROGRESS",
             "tasks": [
-                "Setup project structure",
-                "Configure Task Runner"
+                "Opdater README.md med grid layout",
+                "Tilføj grid eksempler til HOWTO.md",
+                "Dokumenter nye task config muligheder"
             ]
         }
     }
