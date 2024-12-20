@@ -164,3 +164,150 @@ Task Runner Dashboard bruger nu VS Code's native UI komponenter:
 1. Tjek VS Code tema kompatibilitet
 2. Verificer CSS variabler
 3. Reload VS Code vindue
+
+## PDSL Format Guide
+
+### Introduktion til PDSL
+PDSL (Project Domain Specific Language) er et struktureret format til at definere og tracke projekt status. Det er designet til at være:
+- Let at læse og skrive
+- Integreret med Task Runner Dashboard
+- Velegnet til AI-assisteret udvikling
+- Fleksibelt for forskellige projekt typer
+
+### Basis PDSL Struktur
+1. Opret en `.ai-assist/project.pdsl` fil i dit projekt:
+```json
+{
+    "PROJECTS": {
+        "MitProjekt": {
+            "name": "Mit Awesome Projekt",
+            "status": "IN_PROGRESS",
+            "description": "En kort beskrivelse af projektet",
+            "components": {
+                "UI": {
+                    "name": "User Interface",
+                    "status": "IN_PROGRESS",
+                    "features": [
+                        "Responsive design",
+                        "Dark mode"
+                    ]
+                }
+            }
+        }
+    }
+}
+```
+
+### Status Typer og Betydning
+PDSL understøtter følgende status typer:
+
+| Status | Beskrivelse | Farve |
+|--------|-------------|-------|
+| `IN_PROGRESS` | Under aktiv udvikling | Blå |
+| `DONE` | Færdig og testet | Grøn |
+| `PENDING` | Venter på at blive startet | Grå |
+| `BLOCKED` | Blokeret af andre tasks | Rød |
+| `REVIEW` | Under code review | Gul |
+| `TESTING` | Under test | Lilla |
+
+### Avancerede PDSL Features
+
+#### Komponenter med Dependencies
+```json
+{
+    "PROJECTS": {
+        "MitProjekt": {
+            "components": {
+                "Frontend": {
+                    "name": "Frontend",
+                    "status": "IN_PROGRESS",
+                    "dependencies": ["API", "Database"],
+                    "features": [
+                        "User authentication",
+                        "Dashboard view"
+                    ]
+                }
+            }
+        }
+    }
+}
+```
+
+#### Iterations og Milestones
+```json
+{
+    "PROJECTS": {
+        "MitProjekt": {
+            "iterations": {
+                "SPRINT_1": {
+                    "name": "Initial Setup",
+                    "status": "DONE",
+                    "tasks": [
+                        "Project setup",
+                        "Basic UI components"
+                    ]
+                }
+            },
+            "milestones": [
+                {
+                    "name": "Beta Release",
+                    "date": "2024-01-31",
+                    "features": [
+                        "Core functionality",
+                        "Basic UI"
+                    ]
+                }
+            ]
+        }
+    }
+}
+```
+
+### Best Practices
+
+1. **Strukturering**
+   - Hold komponenter små og fokuserede
+   - Brug beskrivende navne
+   - Inkluder relevante detaljer i beskrivelser
+
+2. **Status Opdatering**
+   - Opdater status regelmæssigt
+   - Brug Git commits til at tracke ændringer
+   - Hold komponenter synkroniserede
+
+3. **Features**
+   - Skriv korte, præcise feature beskrivelser
+   - Gruppér relaterede features
+   - Inkluder acceptance kriterier
+
+### Integration med Task Runner
+
+1. **Automatisk Status Visning**
+   - Status vises i Task Runner sidebar
+   - Farve-kodning indikerer status
+   - Komponenter kan foldes/unfoldes
+
+2. **Rapport Generering**
+   - Klik på "Generate Report" for status oversigt
+   - Rapporter inkluderer:
+     - Projekt status
+     - Komponent fremskridt
+     - Feature completion
+     - Milestone tracking
+
+3. **Task Integration**
+   - Tasks kan knyttes til PDSL komponenter
+   - Status opdateres automatisk ved task completion
+   - Dependencies trackes på tværs af komponenter
+
+### Fejlfinding
+
+1. **PDSL Parsing Fejl**
+   - Verificer JSON syntax
+   - Tjek for manglende kommaer
+   - Valider status værdier
+
+2. **Status Sync Issues**
+   - Genstart VS Code
+   - Tjek file permissions
+   - Verificer Git integration

@@ -194,6 +194,97 @@ Task Runner Dashboard konfigureres via `.vscode/task-runner.config.json`. Her er
    - Tjek at Git er initialiseret i projektet
    - Verificer at commit messages følger det korrekte format med [STATUS] tags
 
+## PDSL Format
+PDSL (Project Domain Specific Language) er et JSON-baseret format der bruges til at definere og tracke projekt status:
+
+### Basis Struktur
+```json
+{
+    "PROJECTS": {
+        "ProjectName": {
+            "name": "Projekt Navn",
+            "status": "IN_PROGRESS",
+            "description": "Projekt beskrivelse",
+            "components": {
+                "ComponentName": {
+                    "name": "Komponent Navn",
+                    "status": "IN_PROGRESS",
+                    "features": [
+                        "Feature 1",
+                        "Feature 2"
+                    ]
+                }
+            }
+        }
+    }
+}
+```
+
+### Status Typer
+- `IN_PROGRESS`: Aktivt under udvikling
+- `DONE`: Færdiggjort og testet
+- `PENDING`: Venter på at blive påbegyndt
+- `BLOCKED`: Blokeret af andre tasks
+- `REVIEW`: Under code review
+- `TESTING`: Under test
+
+### Komponenter
+Projekter kan opdeles i komponenter for bedre organisering:
+```json
+"components": {
+    "Frontend": {
+        "name": "Frontend",
+        "status": "IN_PROGRESS",
+        "features": [
+            "Responsive design",
+            "Dark mode support"
+        ]
+    },
+    "Backend": {
+        "name": "API Server",
+        "status": "DONE",
+        "features": [
+            "REST endpoints",
+            "Database integration"
+        ]
+    }
+}
+```
+
+### Design Principper
+Projekter kan inkludere design principper og tech stack:
+```json
+{
+    "PROJECTS": {
+        "ProjectName": {
+            // ... andre felter ...
+            "design_principles": [
+                "Mobile first design",
+                "Accessibility focus",
+                "Performance optimization"
+            ],
+            "tech_stack": {
+                "frontend": [
+                    "React",
+                    "TypeScript"
+                ],
+                "backend": [
+                    "Node.js",
+                    "PostgreSQL"
+                ]
+            }
+        }
+    }
+}
+```
+
+### Integration med Task Runner
+PDSL filer integreres automatisk med Task Runner Dashboard:
+- Status vises i sidebar med farve-kodning
+- Komponenter kan foldes/unfoldes
+- Tasks kan knyttes til komponenter
+- Rapporter genereres baseret på PDSL status
+
 ## Features
 +- Moderne grid-baseret task interface
 +- Responsivt design der tilpasser sig VSCode layout
