@@ -12,6 +12,10 @@ function activate(context) {
             retainContextWhenHidden: true
         }
     }));
+    // Registrer focus kommando
+    context.subscriptions.push(vscode.commands.registerCommand('taskRunnerDashboard.focus', () => {
+        vscode.commands.executeCommand('workbench.view.extension.task-runner-dashboard');
+    }));
     // Gem state når VS Code lukkes
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(async () => {
         await provider.saveState();
