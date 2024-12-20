@@ -3,10 +3,22 @@
         "module": "commonjs",
         "target": "ES2020",
         "outDir": "out",
-        "lib": ["ES2020"],
+        "lib": [
+            "ES2020",
+            "DOM",
+            "ES2019.Intl"
+        ],
         "sourceMap": true,
         "rootDir": "src",
-        "strict": true
+        "strict": true,
+        "skipLibCheck": true,
+        "typeRoots": [
+            "./node_modules/@types"
+        ],
+        "types": [
+            "node",
+            "vscode"
+        ]
     },
     "exclude": ["node_modules", ".vscode-test"]
 } 
