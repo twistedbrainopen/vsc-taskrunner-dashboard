@@ -4,6 +4,60 @@
 
 En moderne, visuel task runner integreret i VS Code der gør det nemt at organisere og køre udviklings-tasks.
 
+## PDSL: Project Domain Specific Language
+
+### Hvorfor PDSL?
+PDSL (Project Domain Specific Language) er designet specifikt til at optimere samarbejdet mellem mennesker og AI i softwareudvikling. Det løser flere kritiske udfordringer:
+
+1. **Struktureret Kommunikation**
+   - Giver AI'en præcis kontekst om projekt status
+   - Eliminerer tvetydighed i projekt beskrivelser
+   - Sikrer konsistent forståelse mellem menneske og AI
+
+2. **Projekt Overblik**
+   - Holder styr på komponenter og deres relationer
+   - Tracker fremskridt og afhængigheder
+   - Giver både mennesker og AI samme "mentale model"
+
+3. **Effektiv AI Integration**
+   - AI kan nemt parse og forstå projekt strukturen
+   - Muliggør intelligent task prioritering
+   - Faciliterer kontekst-aware kodegenerering
+
+### AI Samarbejde
+PDSL er specifikt designet til at forbedre AI-menneske interaktioner ved at:
+
+1. **Reducere Kontekst-Switching**
+   - AI'en har altid adgang til fuld projekt kontekst
+   - Mennesker slipper for at gentage projekt detaljer
+   - Automatisk synkronisering af forståelse
+
+2. **Optimere Workflow**
+   - AI kan foreslå næste skridt baseret på status
+   - Automatisk generering af tasks og dependencies
+   - Intelligent prioritering af arbejde
+
+3. **Forbedre Kvalitet**
+   - AI kan validere ændringer mod projekt mål
+   - Automatisk konsistenstjek af implementation
+   - Bedre code reviews med fuld kontekst
+
+### Praktiske Fordele
+1. **For Udviklere**
+   - Mindre tid brugt på at forklare kontekst
+   - Bedre AI-genereret kode der matcher projektet
+   - Automatisk dokumentation og status tracking
+
+2. **For Teams**
+   - Fælles forståelse af projekt status
+   - Lettere onboarding af nye team medlemmer
+   - Effektiv vidensdeling mellem mennesker og AI
+
+3. **For Projekter**
+   - Hurtigere iteration og udvikling
+   - Færre misforståelser og fejl
+   - Bedre projekt dokumentation
+
 ## Projekt Struktur
 Task Runner Dashboard er en VSCode extension designet til at visualisere og interagere med DSL (Domain Specific Language) filer, der bruges i AI-assisteret udvikling. Extensionen fungerer som en bro mellem AI assistenter (som Cursor AI) og udvikleren ved at:
 
