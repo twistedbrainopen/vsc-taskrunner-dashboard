@@ -10,16 +10,10 @@
     "Other"
   ],
   "activationEvents": [
-    "onView:taskRunnerDashboard"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "taskRunnerDashboard.open",
-        "title": "Open Task Runner Dashboard"
-      }
-    ],
     "viewsContainers": {
       "activitybar": [
         {
@@ -36,7 +30,8 @@
           "id": "taskRunnerDashboard",
           "name": "Task Runner",
           "icon": "media/icon.svg",
-          "contextualTitle": "Task Runner Dashboard"
+          "contextualTitle": "Task Runner Dashboard",
+          "visibility": "visible"
         }
       ]
     }

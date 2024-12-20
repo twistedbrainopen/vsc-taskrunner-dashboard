@@ -96,7 +96,41 @@ Task Runner Dashboard er en VSCode extension designet til at visualisere og inte
 ## Installation
 
 ### Via install.sh (Anbefalet Metode)
-1. Opret `install.sh` i dit projekt:
+1. Download install script:
+```bash
+curl -O https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/install.sh
+chmod +x install.sh
+```
+
+2. Kør scriptet:
+```bash
+./install.sh
+```
+
+## Opdatering
+
+### Via update.sh (Anbefalet Metode)
+1. Download update script:
+```bash
+curl -O https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/update.sh
+chmod +x update.sh
+```
+
+2. Kør scriptet:
+```bash
+./update.sh
+```
+
+### Script Reference
+Begge scripts er tilgængelige i GitHub releases:
+- [install.sh](https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/install.sh)
+- [update.sh](https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/update.sh)
+
+For reference, her er indholdet af scriptsne:
+
+<details>
+<summary>install.sh</summary>
+
 ```bash
 #!/bin/bash
 
@@ -111,18 +145,23 @@ echo -e "${BLUE}Installing Task Runner Dashboard...${NC}"
 echo -e "${GREEN}Creating directories...${NC}"
 mkdir -p .vscode
 mkdir -p .ai-assist
+mkdir -p .task-runner
 
-# Download seneste VSIX fra GitHub
-echo -e "${GREEN}Downloading latest VSIX...${NC}"
-curl -L https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/task-runner-dashboard.vsix -o task-runner-dashboard.vsix
+# Download og udpak Task Runner filer
+echo -e "${GREEN}Downloading Task Runner files...${NC}"
+curl -L https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/task-runner-files.zip -o task-runner-files.zip
+unzip -o task-runner-files.zip -d .task-runner/
 
-# Installer extension
-echo -e "${GREEN}Installing VSCode extension...${NC}"
-code --install-extension task-runner-dashboard.vsix
+# Kopier nødvendige filer
+echo -e "${GREEN}Setting up Task Runner...${NC}"
+cp -r .task-runner/out .task-runner/node_modules .task-runner/media ./
+cp .task-runner/package.json ./
+cp .task-runner/HOWTO.md ./
 
-# Opret task-runner.config.json
-echo -e "${GREEN}Creating task runner config...${NC}"
-cat > .vscode/task-runner.config.json << 'EOL'
+# Opret task-runner.config.json hvis den ikke findes
+if [ ! -f .vscode/task-runner.config.json ]; then
+    echo -e "${GREEN}Creating default config...${NC}"
+    cat > .vscode/task-runner.config.json << 'EOL'
 {
     "taskRunner": {
         "categories": {
@@ -142,29 +181,21 @@ cat > .vscode/task-runner.config.json << 'EOL'
     }
 }
 EOL
+fi
 
 # Oprydning
 echo -e "${GREEN}Cleaning up...${NC}"
-rm task-runner-dashboard.vsix
+rm -rf task-runner-files.zip .task-runner
 
 echo -e "${BLUE}Installation complete!${NC}"
-echo -e "${BLUE}Open VSCode and run 'Task Runner: Open Dashboard' to get started${NC}"
+echo -e "${BLUE}Restart VSCode to activate Task Runner Dashboard${NC}"
+echo -e "${GREEN}See HOWTO.md for usage instructions${NC}"
 ```
+</details>
 
-2. Gør scriptet eksekverbart:
-```bash
-chmod +x install.sh
-```
+<details>
+<summary>update.sh</summary>
 
-3. Kør scriptet:
-```bash
-./install.sh
-```
-
-## Opdatering
-
-### Via update.sh
-1. Opret `update.sh` i dit projekt:
 ```bash
 #!/bin/bash
 
@@ -183,38 +214,38 @@ if [ -f .vscode/task-runner.config.json ]; then
     echo -e "${GREEN}Config backup created at .vscode/task-runner.config.backup.json${NC}"
 fi
 
-# Download seneste VSIX fra GitHub
-echo -e "${GREEN}Downloading latest VSIX...${NC}"
-curl -L https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/task-runner-dashboard.vsix -o task-runner-dashboard.vsix
+# Backup eksisterende HOWTO
+if [ -f HOWTO.md ]; then
+    cp HOWTO.md HOWTO.md.backup
+    echo -e "${GREEN}HOWTO backup created at HOWTO.md.backup${NC}"
+fi
 
-# Afinstaller gammel version
-echo -e "${YELLOW}Removing old version...${NC}"
-code --uninstall-extension twistedbrainopen.task-runner-dashboard
+# Download og udpak nye filer
+echo -e "${GREEN}Downloading new version...${NC}"
+curl -L https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/task-runner-files.zip -o task-runner-files.zip
+mkdir -p .task-runner
+unzip -o task-runner-files.zip -d .task-runner/
 
-# Installer ny version
-echo -e "${GREEN}Installing new version...${NC}"
-code --install-extension task-runner-dashboard.vsix
+# Fjern gamle filer
+echo -e "${YELLOW}Removing old files...${NC}"
+rm -rf out node_modules media
+
+# Kopier nye filer
+echo -e "${GREEN}Installing new files...${NC}"
+cp -r .task-runner/out .task-runner/node_modules .task-runner/media ./
+cp .task-runner/package.json ./
+cp .task-runner/HOWTO.md ./
 
 # Oprydning
 echo -e "${GREEN}Cleaning up...${NC}"
-rm task-runner-dashboard.vsix
+rm -rf task-runner-files.zip .task-runner
 
 echo -e "${BLUE}Update complete!${NC}"
 echo -e "${YELLOW}Note: Your existing config has been preserved${NC}"
+echo -e "${YELLOW}Note: HOWTO.md has been updated (backup at HOWTO.md.backup)${NC}"
 echo -e "${BLUE}Restart VSCode to apply changes${NC}"
 ```
-
-2. Gør scriptet eksekverbart:
-```bash
-chmod +x update.sh
-```
-
-3. Kør scriptet:
-```bash
-./update.sh
-```
-
-4. Genstart VSCode for at aktivere den nye version
+</details>
 
 ### Manuelle Opdateringer
 Hvis du foretrækker at opdatere manuelt:
