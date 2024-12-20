@@ -11,8 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-node@v4
         with:
           node-version: '16.x'
-      - run: npm install
-      - run: npm run compile 
+          cache: 'npm'
+      
+      - name: Clean Install Dependencies
+        run: |
+          rm -rf node_modules
+          npm ci
+      
+      - name: Install TypeScript
+        run: npm install -g typescript@4.1.2
+      
+      - name: Compile TypeScript
+        run: npm run compile
