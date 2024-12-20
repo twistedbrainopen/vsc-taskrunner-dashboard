@@ -31,4 +31,9 @@ jobs:
           ls -la node_modules/@types/node/
       
       - name: Compile TypeScript
-        run: tsc -p ./
+        env:
+          DEBUG: "*"
+          TS_NODE_DEBUG: "true"
+        run: |
+          npm run compile
+          cat tsconfig.json
