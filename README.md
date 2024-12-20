@@ -1,8 +1,30 @@
 # Task Runner Dashboard
 
-![Task Runner Dashboard](media/Task%20Runner%20Dashboard.png)
+Visual Studio Code extension til at køre og administrere udviklings-tasks.
 
-En moderne, visuel task runner integreret i VS Code der gør det nemt at organisere og køre udviklings-tasks.
+## Installation
+
+Installations- og opdateringsscript findes i [`/scripts`](scripts/) mappen.
+
+For at installere eller opdatere Task Runner Dashboard:
+
+```bash
+# Gør scriptet eksekverbart
+chmod +x scripts/trdInstall.sh
+
+# Kør scriptet
+./scripts/trdInstall.sh
+```
+
+Scriptet vil:
+- Installere Task Runner Dashboard hvis det ikke er installeret
+- Opdatere til nyeste version hvis en ældre version er installeret
+- Beholde din eksisterende konfiguration ved opdatering
+- Informere dig hvis du allerede har den nyeste version
+
+## Brug
+
+Se [HOWTO.md](HOWTO.md) for detaljeret information om brug af Task Runner Dashboard.
 
 ## PDSL: Project Domain Specific Language
 
@@ -93,21 +115,6 @@ Task Runner Dashboard er en VSCode extension designet til at visualisere og inte
 - `.vscode/task-runner.config.json`: Konfigurationsfil for tasks
 - `.ai-assist/*.pdsl`: PDSL projekt filer der definerer AI-udvikler samarbejdet
 
-## Installation
-
-### Installation og Opdatering
-Installations- og opdaterings-scripts findes i [`/scripts`](scripts/) mappen:
-```bash
-# Gør scripts eksekverbare
-chmod +x scripts/trdInstall.sh scripts/trdUpdate.sh
-
-# Installer Task Runner
-./scripts/trdInstall.sh
-
-# Opdater når der er en ny version
-./scripts/trdUpdate.sh
-```
-
 ## Konfiguration
 Task Runner Dashboard konfigureres via `.vscode/task-runner.config.json`. Her er et eksempel:
 
@@ -131,11 +138,6 @@ Task Runner Dashboard konfigureres via `.vscode/task-runner.config.json`. Her er
     }
 }
 ```
-
-## Brug af Task Runner
-1. Åbn VSCode Command Palette (Cmd + Shift + P)
-2. Søg efter "Task Runner: Åbn Dashboard"
-3. Brug sidebaren til at køre tasks og se projekt status
 
 ## Troubleshooting
 
