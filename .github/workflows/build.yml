@@ -40,9 +40,13 @@ jobs:
         with:
           name: task-runner-dashboard-vsix
           path: "*.vsix"
-          
+          retention-days: 1
+          if-no-files-found: error
+      
       - name: Upload Release Files
         uses: actions/upload-artifact@v3
         with:
           name: task-runner-files
-          path: task-runner-files.zip 
+          path: task-runner-files.zip
+          retention-days: 1
+          if-no-files-found: error
