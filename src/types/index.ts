@@ -35,13 +35,14 @@ export interface TaskConfig {
     id: string;
     label: string;
     command: string;
-    tooltip?: string;
     icon: string;
     color: string;
+    tooltip?: string;
 }
 
 export interface CategoryConfig {
-    name: string;
+    label: string;
+    description?: string;
     tasks: TaskConfig[];
 }
 

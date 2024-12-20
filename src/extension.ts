@@ -41,14 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
     console.log('Task Runner Dashboard er nu aktiveret');
 
     let disposable = vscode.commands.registerCommand('taskRunnerDashboard.open', async () => {
-        console.log('Task Runner Dashboard: Kommando udføres');
-        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-        if (!workspaceFolder) {
-            vscode.window.showErrorMessage('Ingen aktiv workspace fundet');
-            return;
-        }
-
-        TaskRunnerPanel.createOrShow(context.extensionUri);
+        await TaskRunnerPanel.createOrShow(context.extensionUri);
     });
 
     context.subscriptions.push(disposable);

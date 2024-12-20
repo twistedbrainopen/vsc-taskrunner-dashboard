@@ -20,7 +20,8 @@
   },
   "scripts": {
     "compile": "tsc -p ./",
-    "vscode:prepublish": "npm run compile",
+    "build": "npm run compile",
+    "vscode:prepublish": "npm run build",
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts"
   },

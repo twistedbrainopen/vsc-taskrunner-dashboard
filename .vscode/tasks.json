@@ -2,9 +2,19 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Copy Config",
+            "type": "shell",
+            "command": "cp ${workspaceFolder}/task-runner.config.json ${workspaceFolder}/../task-runner-test-env/.vscode/",
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            }
+        },
+        {
             "label": "Build Extension",
             "type": "npm",
             "script": "compile",
+            "dependsOn": ["Copy Config"],
             "group": {
                 "kind": "build",
                 "isDefault": true

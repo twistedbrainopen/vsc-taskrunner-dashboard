@@ -11,7 +11,7 @@
         },
         "ITERATION_2": {
             "name": "Documentation Update",
-            "status": "IN_PROGRESS",
+            "status": "DONE",
             "tasks": [
                 "Opdater README.md med grid layout",
                 "Tilføj grid eksempler til HOWTO.md",
@@ -47,7 +47,7 @@
         "ITERATION_4": {
             "name": "Task Matrix Layout",
             "description": "Redesign af task view med fokus på skalerbar matrix layout og forbedret organisation",
-            "status": "IN_PROGRESS",
+            "status": "DONE",
             "tasks": [
                 "Implementer 4x3 matrix layout for task knapper",
                 "Separer rapport funktion til dedikeret område",
@@ -78,6 +78,49 @@
                         "2x6 på small width"
                     ],
                     "minimum_button_size": "100px x 60px"
+                }
+            }
+        },
+        "ITERATION_5": {
+            "name": "Kodebase Refaktorering",
+            "description": "Omfattende omstrukturering af kodebasen med fokus på modularitet og vedligeholdelse",
+            "status": "DONE",
+            "tasks": [
+                "Opdel kodebase i logiske moduler",
+                "Implementer dedikerede services",
+                "Opret separate view komponenter",
+                "Tilføj TypeScript interfaces",
+                "Implementer asynkron initialisering"
+            ],
+            "technical_details": {
+                "module_structure": {
+                    "views": {
+                        "PdslView": "Håndterer PDSL visning og formatering",
+                        "TaskMatrixView": "Håndterer task matrix layout og rendering"
+                    },
+                    "services": {
+                        "ConfigService": "Konfigurationshåndtering",
+                        "StateService": "Tilstandshåndtering på tværs af sessioner",
+                        "GitService": "Git integration og commit analyse"
+                    },
+                    "utils": {
+                        "iconUtils": "Centraliseret ikon håndtering"
+                    }
+                },
+                "type_definitions": {
+                    "location": "src/types/index.ts",
+                    "key_interfaces": [
+                        "TaskConfig",
+                        "CategoryConfig",
+                        "PdslFile",
+                        "StatusStats"
+                    ]
+                },
+                "improvements": {
+                    "maintainability": "Bedre separation af ansvar",
+                    "type_safety": "Omfattende TypeScript type system",
+                    "async_handling": "Robust asynkron initialisering",
+                    "state_management": "Centraliseret tilstandshåndtering"
                 }
             }
         }
