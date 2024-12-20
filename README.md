@@ -58,6 +58,29 @@ PDSL er specifikt designet til at forbedre AI-menneske interaktioner ved at:
    - Færre misforståelser og fejl
    - Bedre projekt dokumentation
 
+## Vigtig Bemærkning om Installation
+Task Runner Dashboard er designet som en **projekt-specifik** extension - ikke en global VS Code extension. Dette er et bevidst valg for at:
+
+1. **Sikre Projekt Autonomi**
+   - Hver projekt har sin egen konfiguration
+   - Ingen afhængighed af globale VS Code indstillinger
+   - Fuld kontrol over task runner versionen i hvert projekt
+
+2. **Forbedre Samarbejde**
+   - Alle teammedlemmer bruger samme version
+   - Konfiguration følger med i Git
+   - Ingen behov for manuel synkronisering af indstillinger
+
+3. **Øge Stabilitet**
+   - Undgå konflikter mellem forskellige projekters behov
+   - Lettere at teste og verificere funktionalitet
+   - Sikker udrulning af opdateringer per projekt
+
+Dette betyder at:
+- Task Runner Dashboard skal installeres separat for hvert projekt
+- Installationen er automatiseret via medfølgende scripts
+- Opdateringer håndteres per projekt, ikke globalt i VS Code
+
 ## Projekt Struktur
 Task Runner Dashboard er en VSCode extension designet til at visualisere og interagere med DSL (Domain Specific Language) filer, der bruges i AI-assisteret udvikling. Extensionen fungerer som en bro mellem AI assistenter (som Cursor AI) og udvikleren ved at:
 
