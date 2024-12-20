@@ -95,167 +95,34 @@ Task Runner Dashboard er en VSCode extension designet til at visualisere og inte
 
 ## Installation
 
-### Via trdInstall.sh (Anbefalet Metode)
-1. Download install script:
+### Hent Scripts
+Download installations- og opdaterings-scripts direkte fra repository:
 ```bash
-curl -O https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/trdInstall.sh
-chmod +x trdInstall.sh
+svn export https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/trunk/scripts
+chmod +x scripts/trdInstall.sh scripts/trdUpdate.sh
 ```
 
-2. Kør scriptet:
+### Installer Task Runner
+Kør installations-scriptet:
 ```bash
-./trdInstall.sh
+./scripts/trdInstall.sh
 ```
 
 ## Opdatering
-
-### Via trdUpdate.sh (Anbefalet Metode)
-1. Download update script:
+Når der er en ny version tilgængelig, kør opdaterings-scriptet:
 ```bash
-curl -O https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/trdUpdate.sh
-chmod +x trdUpdate.sh
+./scripts/trdUpdate.sh
 ```
 
-2. Kør scriptet:
-```bash
-./trdUpdate.sh
-```
+### Script Placering
+Scriptsne placeres i en `scripts` mappe i dit projekt:
+- `scripts/trdInstall.sh`: Installation af Task Runner
+- `scripts/trdUpdate.sh`: Opdatering til nyeste version
 
-### Script Reference
-Begge scripts er tilgængelige i GitHub releases:
-- [trdInstall.sh](https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/trdInstall.sh)
-- [trdUpdate.sh](https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/trdUpdate.sh)
-
-For reference, her er indholdet af scriptsne:
-
-<details>
-<summary>trdInstall.sh</summary>
-
-```bash
-#!/bin/bash
-
-# Farver til output
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-echo -e "${BLUE}Installing Task Runner Dashboard...${NC}"
-
-# Opret nødvendige mapper
-echo -e "${GREEN}Creating directories...${NC}"
-mkdir -p .vscode
-mkdir -p .ai-assist
-mkdir -p .task-runner
-
-# Download og udpak Task Runner filer
-echo -e "${GREEN}Downloading Task Runner files...${NC}"
-curl -L https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/task-runner-files.zip -o task-runner-files.zip
-unzip -o task-runner-files.zip -d .task-runner/
-
-# Kopier nødvendige filer
-echo -e "${GREEN}Setting up Task Runner...${NC}"
-cp -r .task-runner/out .task-runner/node_modules .task-runner/media ./
-cp .task-runner/package.json ./
-cp .task-runner/HOWTO.md ./
-
-# Opret task-runner.config.json hvis den ikke findes
-if [ ! -f .vscode/task-runner.config.json ]; then
-    echo -e "${GREEN}Creating default config...${NC}"
-    cat > .vscode/task-runner.config.json << 'EOL'
-{
-    "taskRunner": {
-        "categories": {
-            "build": {
-                "name": "Build",
-                "tasks": [
-                    {
-                        "id": "build",
-                        "label": "Build Project",
-                        "command": "npm run build",
-                        "icon": "package",
-                        "color": "#4EC9B0"
-                    }
-                ]
-            }
-        }
-    }
-}
-EOL
-fi
-
-# Oprydning
-echo -e "${GREEN}Cleaning up...${NC}"
-rm -rf task-runner-files.zip .task-runner
-
-echo -e "${BLUE}Installation complete!${NC}"
-echo -e "${BLUE}Restart VSCode to activate Task Runner Dashboard${NC}"
-echo -e "${GREEN}See HOWTO.md for usage instructions${NC}"
-```
-</details>
-
-<details>
-<summary>trdUpdate.sh</summary>
-
-```bash
-#!/bin/bash
-
-# Farver til output
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-echo -e "${BLUE}Updating Task Runner Dashboard...${NC}"
-
-# Backup eksisterende config
-echo -e "${YELLOW}Backing up existing config...${NC}"
-if [ -f .vscode/task-runner.config.json ]; then
-    cp .vscode/task-runner.config.json .vscode/task-runner.config.backup.json
-    echo -e "${GREEN}Config backup created at .vscode/task-runner.config.backup.json${NC}"
-fi
-
-# Backup eksisterende HOWTO
-if [ -f HOWTO.md ]; then
-    cp HOWTO.md HOWTO.md.backup
-    echo -e "${GREEN}HOWTO backup created at HOWTO.md.backup${NC}"
-fi
-
-# Download og udpak nye filer
-echo -e "${GREEN}Downloading new version...${NC}"
-curl -L https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/task-runner-files.zip -o task-runner-files.zip
-mkdir -p .task-runner
-unzip -o task-runner-files.zip -d .task-runner/
-
-# Fjern gamle filer
-echo -e "${YELLOW}Removing old files...${NC}"
-rm -rf out node_modules media
-
-# Kopier nye filer
-echo -e "${GREEN}Installing new files...${NC}"
-cp -r .task-runner/out .task-runner/node_modules .task-runner/media ./
-cp .task-runner/package.json ./
-cp .task-runner/HOWTO.md ./
-
-# Oprydning
-echo -e "${GREEN}Cleaning up...${NC}"
-rm -rf task-runner-files.zip .task-runner
-
-echo -e "${BLUE}Update complete!${NC}"
-echo -e "${YELLOW}Note: Your existing config has been preserved${NC}"
-echo -e "${YELLOW}Note: HOWTO.md has been updated (backup at HOWTO.md.backup)${NC}"
-echo -e "${BLUE}Restart VSCode to apply changes${NC}"
-```
-</details>
-
-### Manuelle Opdateringer
-Hvis du foretrækker at opdatere manuelt:
-
-1. Åbn VSCode
-2. Gå til Extensions (Ctrl+Shift+X)
-3. Søg efter "Task Runner Dashboard"
-4. Klik på "Uninstall"
-5. Download den seneste VSIX fra GitHub releases
-6. Installer den nye version via VSIX filen
+Dette gør det nemt at:
+1. Vedligeholde scripts i projektet
+2. Køre opdateringer når det er nødvendigt
+3. Have scripts tilgængelige for hele teamet
 
 ## Konfiguration
 Task Runner Dashboard konfigureres via `.vscode/task-runner.config.json`. Her er et eksempel:
