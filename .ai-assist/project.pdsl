@@ -10,53 +10,28 @@
                     "status": "IN_PROGRESS",
                     "features": [
                         "Responsive grid layout for tasks",
-                        "VS Code Codicon integration for modern look",
-                        "Native VS Code styling og themes",
-                        "Intelligent tooltip system",
-                        "Pinned sidebar integration",
-                        "PDSL View i editor området"
+                        "VS Code Codicon integration",
+                        "Native VS Code styling",
+                        "Intelligent tooltip system"
                     ]
                 },
-                "TaskRunner": {
+                "Core": {
                     "name": "Task Runner Core",
                     "status": "DONE",
                     "features": [
-                        "Konfiguerbar via JSON",
-                        "Kategori-baseret task organisering",
-                        "Integreret terminal output",
-                        "State persistence mellem sessioner"
-                    ]
-                },
-                "PDSLViewer": {
-                    "name": "PDSL Viewer",
-                    "status": "DONE",
-                    "features": [
-                        "Tree-baseret PDSL visning",
-                        "Syntax highlighting",
-                        "Fold/unfold sektioner",
-                        "Status badges og ikoner"
+                        "JSON configuration",
+                        "Task organization",
+                        "Terminal integration",
+                        "State persistence"
                     ]
                 }
             },
             "design_principles": [
-                "Følg VS Code's design sprog",
-                "Brug native VS Code komponenter",
-                "Konsistent ikonografi med Codicons",
-                "Intuitiv og effektiv UX"
-            ],
-            "tech_stack": {
-                "frontend": [
-                    "VS Code Webview API",
-                    "VS Code Codicons",
-                    "TypeScript",
-                    "CSS Variables"
-                ],
-                "backend": [
-                    "VS Code Extension API",
-                    "Node.js",
-                    "TypeScript"
-                ]
-            }
+                "VS Code native look and feel",
+                "Intuitive task organization",
+                "Efficient workflow",
+                "AI-friendly structure"
+            ]
         }
     }
 }
