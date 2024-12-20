@@ -8,22 +8,44 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Konstanter
-REPO_URL="https://github.com/twistedbrainopen/vsc-taskrunner-dashboard"
+REPO_URL="https://raw.githubusercontent.com/twistedbrainopen/vsc-taskrunner-dashboard/main"
 TEMP_DIR=".task-runner-temp"
-REQUIRED_FILES=("out" "media" "package.json" "HOWTO.md")
+VSC_DIR=".vscode"
+REQUIRED_FILES=(
+    "out/extension.js"
+    "out/TaskRunnerPanel.js"
+    "out/components/TaskButton.js"
+    "out/components/ReportButton.js"
+    "out/views/TaskMatrixView.js"
+    "out/views/PdslView.js"
+    "out/services/StateService.js"
+    "out/services/GitService.js"
+    "out/services/ConfigService.js"
+    "out/utils/iconUtils.js"
+    "media/icon.svg"
+    "media/preview-dark.svg"
+    "media/preview-light.svg"
+    "package.json"
+    "HOWTO.md"
+)
+
+# Debug funktion
+debug_info() {
+    echo -e "${YELLOW}DEBUG: $1${NC}"
+}
 
 # Fejlhåndteringsfunktion
 handle_error() {
     echo -e "${RED}Fejl: $1${NC}"
     echo -e "${YELLOW}Rydder op...${NC}"
-    rm -rf "$TEMP_DIR" task-runner-files.zip
+    rm -rf "$TEMP_DIR"
     exit 1
 }
 
 # Funktion til at tjekke om Task Runner er installeret
 check_installation() {
-    if [ -d ".vscode" ] && [ -f "package.json" ]; then
-        local current_version=$(grep '"version":' package.json | cut -d'"' -f4)
+    if [ -d "$VSC_DIR/task-runner" ] && [ -f "$VSC_DIR/task-runner/package.json" ]; then
+        local current_version=$(grep '"version":' "$VSC_DIR/task-runner/package.json" | cut -d'"' -f4)
         echo "$current_version"
         return 0
     fi
@@ -31,13 +53,28 @@ check_installation() {
     return 1
 }
 
-# Funktion til at hente seneste version fra GitHub
+# Funktion til at hente seneste version fra package.json
 get_latest_version() {
-    local latest_version=$(curl -s "$REPO_URL/releases/latest" | grep -o 'tag/v[0-9.]*' | cut -d'v' -f2)
-    if [ -z "$latest_version" ]; then
-        handle_error "Kunne ikke hente seneste version"
+    local temp_file="$TEMP_DIR/package.json"
+    mkdir -p "$TEMP_DIR"
+    if ! curl -s "$REPO_URL/package.json" -o "$temp_file"; then
+        echo "none"
+        return 1
     fi
-    echo "$latest_version"
+    local version=$(grep '"version":' "$temp_file" | cut -d'"' -f4)
+    rm -f "$temp_file"
+    echo "$version"
+}
+
+# Funktion til at downloade en fil
+download_file() {
+    local file="$1"
+    local target_dir="$TEMP_DIR/$(dirname "$file")"
+    mkdir -p "$target_dir"
+    debug_info "Henter $file..."
+    if ! curl -s "$REPO_URL/$file" -o "$TEMP_DIR/$file"; then
+        handle_error "Kunne ikke hente $file"
+    fi
 }
 
 # Funktion til at downloade og installere
@@ -48,47 +85,45 @@ install_or_update() {
     # Opret midlertidig mappe
     mkdir -p "$TEMP_DIR" || handle_error "Kunne ikke oprette midlertidig mappe"
 
-    # Download og verificer zip fil
+    # Download alle filer
     echo -e "${GREEN}Henter filer...${NC}"
-    curl -L -o task-runner-files.zip "$REPO_URL/releases/latest/download/task-runner-files.zip" || handle_error "Download fejlede"
-
-    # Verificer zip fil
-    if [ ! -s task-runner-files.zip ]; then
-        handle_error "Zip filen er tom eller eksisterer ikke"
-    fi
-
-    # Udpak filer
-    echo -e "${GREEN}Udpakker filer...${NC}"
-    unzip -o task-runner-files.zip -d "$TEMP_DIR/" || handle_error "Kunne ikke udpakke zip fil"
+    for file in "${REQUIRED_FILES[@]}"; do
+        download_file "$file"
+    done
 
     # Verificer filer
+    echo -e "${GREEN}Verificerer filer...${NC}"
     for file in "${REQUIRED_FILES[@]}"; do
-        if [ ! -e "$TEMP_DIR/$file" ]; then
-            handle_error "Manglende fil/mappe: $file"
+        if [ ! -f "$TEMP_DIR/$file" ]; then
+            handle_error "Manglende fil: $file"
         fi
     done
 
     # Backup eksisterende konfiguration hvis det er en opdatering
-    if [ "$mode" = "Opdaterer" ] && [ -d ".vscode" ]; then
+    if [ "$mode" = "Opdaterer" ] && [ -d "$VSC_DIR/task-runner" ]; then
         echo -e "${YELLOW}Laver backup af eksisterende konfiguration...${NC}"
-        cp -r .vscode .vscode.backup || handle_error "Kunne ikke lave backup"
+        cp -r "$VSC_DIR/task-runner" "$VSC_DIR/task-runner.backup" || handle_error "Kunne ikke lave backup"
     fi
 
     # Installer filer
     echo -e "${GREEN}Installerer filer...${NC}"
-    mkdir -p .vscode || handle_error "Kunne ikke oprette .vscode mappe"
+    mkdir -p "$VSC_DIR/task-runner" || handle_error "Kunne ikke oprette task-runner mappe"
+    
+    # Kopier filer og opret nødvendige mapper
     for file in "${REQUIRED_FILES[@]}"; do
-        cp -r "$TEMP_DIR/$file" ./ || handle_error "Kunne ikke kopiere $file"
+        local target_dir="$VSC_DIR/task-runner/$(dirname "$file")"
+        mkdir -p "$target_dir"
+        cp -r "$TEMP_DIR/$file" "$target_dir/$(basename "$file")" || handle_error "Kunne ikke kopiere $file"
     done
 
     # Oprydning
     echo -e "${GREEN}Rydder op...${NC}"
-    rm -rf "$TEMP_DIR" task-runner-files.zip
+    rm -rf "$TEMP_DIR"
 
     # Gendan konfiguration hvis det er en opdatering
-    if [ "$mode" = "Opdaterer" ] && [ -d ".vscode.backup" ]; then
-        cp -r .vscode.backup/* .vscode/ 2>/dev/null || true
-        rm -rf .vscode.backup
+    if [ "$mode" = "Opdaterer" ] && [ -d "$VSC_DIR/task-runner.backup" ]; then
+        cp -r "$VSC_DIR/task-runner.backup/task-runner.config.json" "$VSC_DIR/task-runner/" 2>/dev/null || true
+        rm -rf "$VSC_DIR/task-runner.backup"
     fi
 }
 
@@ -98,6 +133,9 @@ echo -e "${BLUE}Task Runner Dashboard Setup${NC}"
 # Tjek nuværende installation
 current_version=$(check_installation)
 latest_version=$(get_latest_version)
+
+debug_info "Nuværende version: $current_version"
+debug_info "Seneste version: $latest_version"
 
 if [ "$current_version" = "none" ]; then
     # Ny installation
@@ -118,4 +156,4 @@ else
 fi
 
 echo -e "${YELLOW}Genstart VSCode for at aktivere Task Runner Dashboard${NC}"
-echo -e "${GREEN}Se HOWTO.md for brugsanvisning${NC}" 
+echo -e "${GREEN}Se $VSC_DIR/task-runner/HOWTO.md for brugsanvisning${NC}" 

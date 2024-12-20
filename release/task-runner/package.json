@@ -3,10 +3,6 @@
   "displayName": "Task Runner Dashboard",
   "description": "Visual task runner for development workflows",
   "version": "1.0.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/LarsPedersen/task-runner-dashboard.git"
-  },
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -14,9 +10,11 @@
     "Other"
   ],
   "activationEvents": [
-    "onStartupFinished"
+    "onStartupFinished",
+    "onView:taskRunnerDashboard",
+    "onCommand:taskRunnerDashboard.focus"
   ],
-  "main": "./.vscode/task-runner/out/extension.js",
+  "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
@@ -30,7 +28,7 @@
         {
           "id": "task-runner-dashboard",
           "title": "Task Runner",
-          "icon": ".vscode/task-runner/media/icon.svg"
+          "icon": "media/icon.svg"
         }
       ]
     },
@@ -40,7 +38,7 @@
           "type": "webview",
           "id": "taskRunnerDashboard",
           "name": "Task Runner",
-          "icon": ".vscode/task-runner/media/icon.svg",
+          "icon": "media/icon.svg",
           "contextualTitle": "Task Runner Dashboard",
           "visibility": "visible",
           "when": "true"

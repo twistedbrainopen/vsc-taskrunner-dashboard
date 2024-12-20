@@ -1,37 +1,20 @@
 {
     "PROJECTS": {
-        "TaskRunnerDashboard": {
-            "name": "Task Runner Dashboard",
+        "TestProject": {
+            "name": "Test Project",
             "status": "IN_PROGRESS",
-            "description": "Visual task runner for development workflows",
+            "description": "Et test projekt for at verificere Task Runner Dashboard installationen",
             "components": {
-                "UI": {
-                    "name": "User Interface",
+                "TaskRunner": {
+                    "name": "Task Runner",
                     "status": "IN_PROGRESS",
                     "features": [
-                        "Responsive grid layout for tasks",
-                        "VS Code Codicon integration",
-                        "Native VS Code styling",
-                        "Intelligent tooltip system"
-                    ]
-                },
-                "Core": {
-                    "name": "Task Runner Core",
-                    "status": "DONE",
-                    "features": [
-                        "JSON configuration",
-                        "Task organization",
-                        "Terminal integration",
-                        "State persistence"
+                        "Task konfiguration",
+                        "PDSL integration",
+                        "Status tracking"
                     ]
                 }
-            },
-            "design_principles": [
-                "VS Code native look and feel",
-                "Intuitive task organization",
-                "Efficient workflow",
-                "AI-friendly structure"
-            ]
+            }
         }
     }
 }

@@ -3,7 +3,12 @@ out/
 dist/
 *.vsix
 
+# Andre skjulte filer og mapper
+.*
+
 # Inkluder disse mapper explicit
+!.gitignore
+!.github/
 !.vscode/
 !.ai-assist/
 
@@ -11,8 +16,3 @@ dist/
 .vscode/*.log
 .vscode/settings.json
 .vscode/launch.json
-
-# Andre skjulte filer og mapper
-.*
-!.gitignore
-!.github/
