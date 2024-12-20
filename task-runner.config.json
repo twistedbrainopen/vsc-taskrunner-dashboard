@@ -9,21 +9,103 @@
                         "label": "Kompiler Extension",
                         "command": "npm run compile",
                         "tooltip": "Kompilerer TypeScript koden",
-                        "icon": "tools",
-                        "color": "#007ACC"
+                        "icon": "package",
+                        "color": "#4EC9B0"
+                    },
+                    {
+                        "id": "build-prod",
+                        "label": "Production Build",
+                        "command": "npm run build",
+                        "tooltip": "Bygger produktionsversion",
+                        "icon": "package",
+                        "color": "#9C27B0"
+                    },
+                    {
+                        "id": "analyze",
+                        "label": "Bundle Analysis",
+                        "command": "npm run analyze",
+                        "tooltip": "Analyserer bundle størrelse",
+                        "icon": "graph",
+                        "color": "#E91E63"
                     }
                 ]
             },
             "dev": {
-                "name": "Udvikling",
+                "name": "Development",
                 "tasks": [
                     {
                         "id": "watch",
                         "label": "Watch Mode",
                         "command": "npm run watch",
-                        "tooltip": "Starter watch mode for automatisk kompilering",
+                        "tooltip": "Starter watch mode",
                         "icon": "eye",
                         "color": "#4CAF50"
+                    },
+                    {
+                        "id": "start",
+                        "label": "Start Dev Server",
+                        "command": "npm run dev",
+                        "tooltip": "Starter development server",
+                        "icon": "play",
+                        "color": "#4CAF50"
+                    },
+                    {
+                        "id": "lint",
+                        "label": "Lint Code",
+                        "command": "npm run lint",
+                        "tooltip": "Kører linter",
+                        "icon": "check",
+                        "color": "#FFC107"
+                    }
+                ]
+            },
+            "test": {
+                "name": "Test",
+                "tasks": [
+                    {
+                        "id": "test",
+                        "label": "Run Tests",
+                        "command": "npm test",
+                        "tooltip": "Kører alle tests",
+                        "icon": "beaker",
+                        "color": "#2196F3"
+                    },
+                    {
+                        "id": "test-watch",
+                        "label": "Test Watch",
+                        "command": "npm run test:watch",
+                        "tooltip": "Kører tests i watch mode",
+                        "icon": "eye",
+                        "color": "#03A9F4"
+                    },
+                    {
+                        "id": "coverage",
+                        "label": "Test Coverage",
+                        "command": "npm run test:coverage",
+                        "tooltip": "Genererer test coverage rapport",
+                        "icon": "checklist",
+                        "color": "#00BCD4"
+                    }
+                ]
+            },
+            "tools": {
+                "name": "Tools",
+                "tasks": [
+                    {
+                        "id": "clean",
+                        "label": "Clean Build",
+                        "command": "npm run clean",
+                        "tooltip": "Rydder op i build filer",
+                        "icon": "tools",
+                        "color": "#795548"
+                    },
+                    {
+                        "id": "docs",
+                        "label": "Generate Docs",
+                        "command": "npm run docs",
+                        "tooltip": "Genererer dokumentation",
+                        "icon": "book",
+                        "color": "#607D8B"
                     }
                 ]
             }

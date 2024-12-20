@@ -17,6 +17,69 @@
                 "Tilføj grid eksempler til HOWTO.md",
                 "Dokumenter nye task config muligheder"
             ]
+        },
+        "ITERATION_3": {
+            "name": "PDSL View Forbedringer",
+            "description": "UX forbedringer til PDSL view med fokus på brugervenlighed og tilstandshåndtering",
+            "status": "DONE",
+            "tasks": [
+                "Implementer automatisk foldning baseret på status (DONE og PENDING foldes ind)",
+                "Tilføj fold/unfold funktionalitet via pile-ikoner",
+                "Gem og gendan sidste viste PDSL fil mellem sessioner",
+                "Implementer scroll position bevaring",
+                "Tilføj lokal state fil i .vscode mappe"
+            ],
+            "technical_details": {
+                "state_management": {
+                    "storage": ".vscode/task-runner-state.json",
+                    "tracked_properties": [
+                        "lastViewedPdslFile",
+                        "lastScrollPosition"
+                    ]
+                },
+                "ui_features": {
+                    "folding": "Automatisk foldning af DONE/PENDING sektioner ved load",
+                    "icons": "Interaktive pile-ikoner (▼/▶) for fold/unfold",
+                    "persistence": "Session-uafhængig tilstandsbevaring"
+                }
+            }
+        },
+        "ITERATION_4": {
+            "name": "Task Matrix Layout",
+            "description": "Redesign af task view med fokus på skalerbar matrix layout og forbedret organisation",
+            "status": "IN_PROGRESS",
+            "tasks": [
+                "Implementer 4x3 matrix layout for task knapper",
+                "Separer rapport funktion til dedikeret område",
+                "Tilføj dynamisk grid expansion for flere tasks",
+                "Optimer knap layout med ikoner og labels",
+                "Implementer responsivt design for matrix grid"
+            ],
+            "technical_details": {
+                "layout": {
+                    "base_grid": "4x3 matrix",
+                    "expansion": "Dynamisk tilføjelse af rækker ved behov",
+                    "spacing": "Konsistent padding og gap mellem knapper"
+                },
+                "ui_components": {
+                    "task_button": {
+                        "elements": ["ikon", "label", "status indikator"],
+                        "styling": "Moderne, flad design med hover effekter"
+                    },
+                    "report_section": {
+                        "placement": "Separat sektion under task matrix",
+                        "styling": "Visuelt adskilt fra task grid"
+                    }
+                },
+                "responsive_behavior": {
+                    "breakpoints": [
+                        "4x3 på full width",
+                        "3x4 på medium width",
+                        "2x6 på small width"
+                    ],
+                    "minimum_button_size": "100px x 60px"
+                }
+            }
         }
     }
 }

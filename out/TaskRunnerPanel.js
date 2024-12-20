@@ -114,7 +114,8 @@ class TaskRunnerPanel {
             content: await loadPdslContent(uri)
         })));
         // Opdater webview med både config og PDSL data
-        this._panel.webview.html = this._getHtmlForWebview();
+        const taskGrid = await this._renderTaskGrid();
+        this._panel.webview.html = this._getHtmlForWebview(taskGrid);
     }
     _formatPdslContent(content) {
         const getStatusBadge = (status) => {
@@ -254,7 +255,7 @@ class TaskRunnerPanel {
             </div>
         `;
     }
-    _getHtmlForWebview() {
+    _getHtmlForWebview(taskGrid = '') {
         return `
             <!DOCTYPE html>
             <html>
@@ -265,6 +266,8 @@ class TaskRunnerPanel {
                     :root {
                         --grid-gap: 12px;
                         --card-radius: 6px;
+                        --button-min-width: 100px;
+                        --button-height: 60px;
                     }
                     
                     body {
@@ -273,119 +276,8 @@ class TaskRunnerPanel {
                         font-family: var(--vscode-font-family);
                         background: var(--vscode-editor-background);
                     }
-                    
-                    .task-grid {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                        gap: var(--grid-gap);
-                        padding: var(--grid-gap);
-                        max-width: 1200px;
-                        margin: 0 auto;
-                    }
-                    
-                    .category-section {
-                        background: var(--vscode-sideBar-background);
-                        border-radius: var(--card-radius);
-                        padding: var(--grid-gap);
-                        border: 1px solid var(--vscode-panel-border);
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                    }
-                    
-                    .category-title {
-                        font-size: 13px;
-                        font-weight: 600;
-                        margin-bottom: 12px;
-                        color: var(--vscode-foreground);
-                        padding-bottom: 8px;
-                        border-bottom: 1px solid var(--vscode-panel-border);
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                    }
-                    
-                    .task-button {
-                        display: flex;
-                        align-items: center;
-                        width: 100%;
-                        padding: 8px 12px;
-                        margin: 6px 0;
-                        border: none;
-                        border-radius: 4px;
-                        background: var(--vscode-button-background);
-                        color: var(--vscode-button-foreground);
-                        cursor: pointer;
-                        transition: all 0.2s ease;
-                        font-size: 12px;
-                    }
-                    
-                    .task-button:hover {
-                        transform: translateY(-1px);
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                    }
-                    
-                    .task-button:active {
-                        transform: translateY(0);
-                    }
-                    
-                    .task-icon {
-                        font-size: 16px;
-                        margin-right: 8px;
-                        opacity: 0.9;
-                    }
-                    
-                    .task-label {
-                        flex: 1;
-                        text-align: left;
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                    }
-                    
-                    .pdsl-selector {
-                        position: fixed;
-                        top: 0;
-                        right: 0;
-                        background: var(--vscode-editor-background);
-                        padding: 12px;
-                        border-left: 1px solid var(--vscode-panel-border);
-                        border-bottom: 1px solid var(--vscode-panel-border);
-                        border-bottom-left-radius: var(--card-radius);
-                        box-shadow: -2px 2px 4px rgba(0,0,0,0.1);
-                    }
-                    
-                    .pdsl-selector-toggle {
-                        position: fixed;
-                        top: 12px;
-                        right: 12px;
-                        padding: 6px;
-                        background: var(--vscode-button-background);
-                        border: none;
-                        border-radius: 4px;
-                        color: var(--vscode-button-foreground);
-                        cursor: pointer;
-                        z-index: 1000;
-                    }
-                    
-                    .pdsl-file-list {
-                        max-height: 300px;
-                        overflow-y: auto;
-                        margin-top: 8px;
-                    }
-                    
-                    .pdsl-file-item {
-                        display: flex;
-                        align-items: center;
-                        padding: 4px 0;
-                    }
-                    
-                    .pdsl-checkbox {
-                        margin-right: 8px;
-                    }
-                    
-                    .pdsl-filename {
-                        font-size: 12px;
-                        color: var(--vscode-foreground);
-                    }
-                    
+
+                    /* Navigation Styles */
                     .nav-menu {
                         position: fixed;
                         top: 0;
@@ -412,7 +304,7 @@ class TaskRunnerPanel {
                         background: var(--vscode-button-background);
                         color: var(--vscode-button-foreground);
                     }
-                    
+
                     .pdsl-dropdown {
                         flex: 1;
                         padding: 4px 8px;
@@ -422,23 +314,122 @@ class TaskRunnerPanel {
                         border-radius: 4px;
                         display: none;
                     }
-                    
+
                     .pdsl-view .pdsl-dropdown {
                         display: block;
                     }
-                    
+
+                    /* Content Area Styles */
                     .content-area {
                         margin-top: 48px;
                         padding: 16px;
                     }
-                    
+
                     .view {
                         display: none;
                     }
-                    
+
                     .view.active {
                         display: block;
                     }
+
+                    /* Task Matrix Styles */
+                    .task-matrix-container {
+                        max-width: 1200px;
+                        margin: 0 auto;
+                        padding: var(--grid-gap);
+                    }
+
+                    .task-matrix {
+                        display: grid;
+                        grid-template-columns: repeat(4, 1fr);
+                        gap: var(--grid-gap);
+                        margin-bottom: 20px;
+                    }
+
+                    @media (max-width: 1000px) {
+                        .task-matrix {
+                            grid-template-columns: repeat(3, 1fr);
+                        }
+                    }
+
+                    @media (max-width: 700px) {
+                        .task-matrix {
+                            grid-template-columns: repeat(2, 1fr);
+                        }
+                    }
+                    
+                    .task-button {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        min-height: var(--button-height);
+                        padding: 12px;
+                        border: none;
+                        border-radius: var(--card-radius);
+                        background: var(--vscode-button-background);
+                        color: var(--vscode-button-foreground);
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        text-align: center;
+                    }
+                    
+                    .task-button:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                    }
+                    
+                    .task-button:active {
+                        transform: translateY(0);
+                    }
+                    
+                    .task-icon {
+                        font-size: 24px;
+                        margin-bottom: 8px;
+                    }
+                    
+                    .task-label {
+                        font-size: 12px;
+                        font-weight: 500;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        width: 100%;
+                    }
+
+                    .report-section {
+                        margin-top: 20px;
+                        padding-top: 20px;
+                        border-top: 1px solid var(--vscode-panel-border);
+                    }
+
+                    .report-button {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 200px;
+                        margin: 0 auto;
+                        padding: 10px 20px;
+                        background: var(--vscode-button-background);
+                        color: var(--vscode-button-foreground);
+                        border: none;
+                        border-radius: var(--card-radius);
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                    }
+
+                    .report-button:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                    }
+
+                    .report-button .task-icon {
+                        margin: 0 8px 0 0;
+                        font-size: 16px;
+                    }
+
+                    /* PDSL View Styles */
                     #pdsl-content-view {
                         height: calc(100vh - 60px);
                         overflow-y: auto;
@@ -484,8 +475,7 @@ class TaskRunnerPanel {
                         }
                     });
 
-                    // Switch view funktion
-                    window.switchView = function(viewName) {
+                    function switchView(viewName) {
                         const contentView = document.getElementById('pdsl-content-view');
                         
                         if (viewName === 'tasks') {
@@ -497,14 +487,18 @@ class TaskRunnerPanel {
                             });
                         }
 
-                        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-                        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                        document.querySelectorAll('.view').forEach(view => {
+                            view.classList.remove('active');
+                        });
+                        document.querySelectorAll('.nav-item').forEach(item => {
+                            item.classList.remove('active');
+                        });
                         
                         document.getElementById(viewName + '-view').classList.add('active');
-                        document.querySelector(\`[onclick="switchView('\${viewName}')"]\`).classList.add('active');
+                        document.querySelector('.nav-item[onclick*="' + viewName + '"]').classList.add('active');
                         
-                        const dropdown = document.querySelector('.pdsl-dropdown');
-                        dropdown.style.display = viewName === 'pdsl' ? 'block' : 'none';
+                        // Vis/skjul PDSL dropdown
+                        document.body.classList.toggle('pdsl-view', viewName === 'pdsl');
 
                         if (viewName === 'pdsl') {
                             // Gendan scroll position når vi kommer tilbage
@@ -517,17 +511,24 @@ class TaskRunnerPanel {
                                 }, 100);
                             }
                         }
-                    };
+                    }
 
-                    // Show PDSL content funktion
-                    window.showPdslContent = function(path) {
+                    function handleTaskClick(taskId, command) {
+                        vscode.postMessage({
+                            command: taskId === 'generate-report' ? 'generateReport' : 'runTask',
+                            taskId: taskId,
+                            taskCommand: command
+                        });
+                    }
+
+                    function showPdslContent(path) {
                         if (!path) return;
                         state.currentFile = path;
                         vscode.postMessage({
                             command: 'showPdslContent',
                             path: path
                         });
-                    };
+                    }
 
                     // Scroll event handler med debounce
                     let scrollTimeout;
@@ -567,8 +568,8 @@ class TaskRunnerPanel {
                 
                 <div class="content-area">
                     <div id="tasks-view" class="view active">
-                        <div class="task-grid">
-                            ${this._renderTaskGrid()}
+                        <div class="task-matrix-container">
+                            ${taskGrid}
                         </div>
                     </div>
                     
@@ -580,66 +581,45 @@ class TaskRunnerPanel {
             </html>
         `;
     }
-    _renderTaskGrid() {
-        const config = {
-            taskRunner: {
-                categories: {
-                    "status": {
-                        name: "Status",
-                        tasks: [
-                            {
-                                id: "generate-report",
-                                label: "Generate Report",
-                                command: "generateReport",
-                                icon: "graph",
-                                color: "#CF9178"
-                            }
-                        ]
-                    },
-                    "build": {
-                        name: "Build",
-                        tasks: [
-                            {
-                                id: "build",
-                                label: "Build Project",
-                                command: "npm run build",
-                                icon: "package",
-                                color: "#4EC9B0"
-                            }
-                        ]
-                    },
-                    "test": {
-                        name: "Test",
-                        tasks: [
-                            {
-                                id: "test",
-                                label: "Run Tests",
-                                command: "npm test",
-                                icon: "beaker",
-                                color: "#007ACC"
-                            }
-                        ]
-                    }
-                }
-            }
+    async _renderTaskGrid() {
+        // Separer rapport task fra andre tasks
+        const reportTask = {
+            id: "generate-report",
+            label: "Generate Report",
+            command: "generateReport",
+            icon: "graph",
+            color: "#CF9178"
         };
-        return Object.entries(config.taskRunner.categories)
-            .map(([categoryId, category]) => `
-                <div class="category-section">
-                    <div class="category-title">${category.name}</div>
-                    ${category.tasks.map((task) => `
-                        <button 
-                            class="task-button" 
-                            onclick="handleTaskClick('${task.id}', '${task.command}')"
-                            style="background-color: ${task.color}"
-                            title="${task.label}"
-                        >
-                            <span class="task-icon">${this._getIconHtml(task.icon)}</span>
-                            <span class="task-label">${task.label}</span>
-                        </button>
-                    `).join('')}
-                </div>
-            `).join('');
+        // Saml alle andre tasks i en flad liste
+        const config = await this._loadConfig();
+        const allTasks = Object.values(config?.taskRunner?.categories || {})
+            .flatMap(category => category.tasks || [])
+            .filter(task => task.id !== 'generate-report');
+        return `
+            <div class="task-matrix">
+                ${allTasks.map(task => `
+                    <button 
+                        class="task-button" 
+                        onclick="handleTaskClick('${task.id}', '${task.command}')"
+                        style="background-color: ${task.color}"
+                        title="${task.label}"
+                    >
+                        <span class="task-icon">${this._getIconHtml(task.icon)}</span>
+                        <span class="task-label">${task.label}</span>
+                    </button>
+                `).join('')}
+            </div>
+            <div class="report-section">
+                <button 
+                    class="report-button"
+                    onclick="handleTaskClick('${reportTask.id}', '${reportTask.command}')"
+                    title="${reportTask.label}"
+                >
+                    <span class="task-icon">${this._getIconHtml(reportTask.icon)}</span>
+                    <span class="task-label">${reportTask.label}</span>
+                </button>
+            </div>
+        `;
     }
     _getIconHtml(iconName) {
         const icons = {
@@ -652,45 +632,23 @@ class TaskRunnerPanel {
         return icons[iconName] || '▶️';
     }
     async _loadConfig() {
-        if (!vscode.workspace.workspaceFolders) {
-            return null;
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+        if (!workspaceFolder) {
+            return {
+                taskRunner: {
+                    categories: {}
+                }
+            };
         }
-        // Ændret sti til at pege på .vscode mappen
-        const configPath = path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, '.vscode', 'task-runner.config.json');
+        const configPath = path.join(workspaceFolder.uri.fsPath, '.vscode', 'task-runner.config.json');
         try {
             const configContent = await fs.promises.readFile(configPath, 'utf8');
             return JSON.parse(configContent);
         }
         catch (error) {
-            vscode.window.showErrorMessage('Kunne ikke indlæse task runner config fra .vscode mappe');
             return {
                 taskRunner: {
-                    categories: {
-                        "build": {
-                            name: "Build",
-                            tasks: [
-                                {
-                                    id: "build",
-                                    label: "Build Project",
-                                    command: "npm run build",
-                                    icon: "package",
-                                    color: "#4EC9B0"
-                                }
-                            ]
-                        },
-                        "test": {
-                            name: "Test",
-                            tasks: [
-                                {
-                                    id: "test",
-                                    label: "Run Tests",
-                                    command: "npm test",
-                                    icon: "beaker",
-                                    color: "#007ACC"
-                                }
-                            ]
-                        }
-                    }
+                    categories: {}
                 }
             };
         }
