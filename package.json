@@ -2,7 +2,7 @@
   "name": "task-runner-dashboard",
   "displayName": "Task Runner Dashboard",
   "description": "Visual task runner for development workflows",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.74.0"
   },
