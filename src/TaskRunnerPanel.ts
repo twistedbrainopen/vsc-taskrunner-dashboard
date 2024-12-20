@@ -205,38 +205,50 @@ export class TaskRunnerPanel {
                     .map(entry => {
                         const [key, val] = entry;
                         const pdslVal = val as PdslValue;
-                        const statusBadge = pdslVal?.status ? getStatusBadge(pdslVal.status) : '';
+                        const status = pdslVal?.status || '';
+                        const statusBadge = status ? getStatusBadge(status) : '';
                         
-                        // Kun fold/unfold for de første to niveauer
-                        const isFoldable = level < 2;
+                        // Automatisk fold baseret på status
+                        const shouldFold = status === 'DONE' || status === 'PENDING';
                         const uniqueId = `section-${level}-${key}-${Math.random().toString(36).substr(2, 9)}`;
                         
                         if (typeof val === 'object' && val !== null) {
                             return `
-                                <div class="pdsl-section" data-level="${level}">
+                                <div class="pdsl-section" data-level="${level}" data-status="${status}">
                                     <div class="section-header" 
-                                         onclick="${isFoldable ? `toggleSection('${uniqueId}')` : ''}"
                                          style="
                                             display: flex;
                                             justify-content: space-between;
                                             align-items: center;
                                             padding: 8px;
                                             margin-left: ${level * 16}px;
-                                            cursor: ${isFoldable ? 'pointer' : 'default'};
+                                            background-color: ${shouldFold ? 'rgba(0, 0, 0, 0.1)' : 'transparent'};
                                          "
                                     >
                                         <div style="display: flex; align-items: center;">
-                                            ${isFoldable ? '<span class="fold-icon">▼</span>' : ''}
+                                            <div class="fold-toggle" 
+                                                 style="
+                                                    cursor: pointer;
+                                                    width: 20px;
+                                                    height: 20px;
+                                                    display: flex;
+                                                    align-items: center;
+                                                    justify-content: center;
+                                                    margin-right: 4px;
+                                                 "
+                                            >
+                                                <span class="fold-icon">${shouldFold ? '▶' : '▼'}</span>
+                                            </div>
                                             <span style="
                                                 color: ${level === 0 ? '#4EC9B0' : '#007ACC'};
                                                 font-weight: ${level === 0 ? '600' : '500'};
                                                 font-size: ${level === 0 ? '18px' : '16px'};
-                                                margin-left: 8px;
+                                                ${status === 'DONE' ? 'text-decoration: line-through;' : ''}
                                             ">${key}:</span>
                                         </div>
                                         ${statusBadge}
                                     </div>
-                                    <div id="${uniqueId}" class="section-content" style="display: block;">
+                                    <div class="section-content" style="display: ${shouldFold ? 'none' : 'block'};">
                                         ${formatValue(val, level + 1)}
                                     </div>
                                 </div>
@@ -244,7 +256,10 @@ export class TaskRunnerPanel {
                         }
                         
                         return `
-                            <div class="pdsl-item" style="margin-left: ${level * 16}px;">
+                            <div class="pdsl-item" style="
+                                margin-left: ${level * 16}px;
+                                ${status === 'DONE' ? 'text-decoration: line-through; opacity: 0.7;' : ''}
+                            ">
                                 <span style="color: var(--vscode-foreground); opacity: 0.8;">
                                     ${key}:
                                 </span>
@@ -262,56 +277,73 @@ export class TaskRunnerPanel {
 
         return `
             <style>
-                .fold-icon {
-                    display: inline-block;
-                    width: 20px;
-                    transition: transform 0.2s;
-                    user-select: none;
-                }
-                .section-header {
+                .fold-toggle {
+                    border-radius: 3px;
                     transition: background-color 0.2s;
                 }
-                .section-header:hover {
+                .fold-toggle:hover {
                     background-color: rgba(255, 255, 255, 0.1);
+                }
+                .fold-icon {
+                    user-select: none;
+                    display: inline-block;
+                }
+                .section-header {
+                    transition: all 0.2s;
+                }
+                .section-header:hover {
+                    background-color: rgba(255, 255, 255, 0.05) !important;
                 }
                 .section-content {
                     transition: height 0.2s ease-out;
+                }
+                .pdsl-section[data-status="DONE"] .section-header {
+                    opacity: 0.7;
+                }
+                .pdsl-section[data-status="PENDING"] .section-header {
+                    opacity: 0.5;
                 }
             </style>
             <div class="pdsl-content">
                 ${formatValue(content)}
             </div>
             <script>
-                function toggleSection(id) {
-                    const content = document.getElementById(id);
-                    const header = content.previousElementSibling;
-                    const icon = header.querySelector('.fold-icon');
+                const vscode = acquireVsCodeApi();
+                
+                // Lyt efter clicks på hele dokumentet
+                document.addEventListener('click', function(event) {
+                    const target = event.target;
                     
-                    if (content.style.display === 'none') {
-                        content.style.display = 'block';
-                        icon.style.transform = 'rotate(0deg)';
-                        icon.textContent = '▼';
-                    } else {
-                        content.style.display = 'none';
-                        icon.style.transform = 'rotate(-90deg)';
-                        icon.textContent = '▶';
-                    }
-                }
-
-                // Initialiser fold/unfold tilstand for top-level og første niveau
-                document.addEventListener('DOMContentLoaded', () => {
-                    const sections = document.querySelectorAll('.pdsl-section');
-                    sections.forEach(section => {
-                        const level = parseInt(section.getAttribute('data-level') || '0');
-                        if (level < 2) {
-                            const content = section.querySelector('.section-content');
-                            const icon = section.querySelector('.fold-icon');
-                            if (content && icon) {
-                                content.style.display = 'block';
-                                icon.textContent = '▼';
-                            }
+                    // Find nærmeste .fold-toggle eller .fold-icon element
+                    const toggle = target.closest('.fold-toggle') || target.closest('.fold-icon');
+                    
+                    if (toggle) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        
+                        // Find den sektion vi arbejder med
+                        const section = toggle.closest('.pdsl-section');
+                        if (!section) return;
+                        
+                        const content = section.querySelector('.section-content');
+                        const icon = section.querySelector('.fold-icon');
+                        
+                        if (!content || !icon) return;
+                        
+                        console.log('Toggle clicked, current display:', content.style.display);
+                        
+                        if (content.style.display === 'none') {
+                            // Fold ud
+                            content.style.display = 'block';
+                            icon.textContent = '▼';
+                            console.log('Folding out');
+                        } else {
+                            // Fold ind
+                            content.style.display = 'none';
+                            icon.textContent = '▶';
+                            console.log('Folding in');
                         }
-                    });
+                    }
                 });
             </script>
         `;
