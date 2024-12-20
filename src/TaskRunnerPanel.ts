@@ -227,6 +227,7 @@ export class TaskRunnerPanel {
                                     >
                                         <div style="display: flex; align-items: center;">
                                             <div class="fold-toggle" 
+                                                 onclick="toggleFold(this)"
                                                  style="
                                                     cursor: pointer;
                                                     width: 20px;
@@ -286,16 +287,12 @@ export class TaskRunnerPanel {
                 }
                 .fold-icon {
                     user-select: none;
-                    display: inline-block;
                 }
                 .section-header {
                     transition: all 0.2s;
                 }
                 .section-header:hover {
                     background-color: rgba(255, 255, 255, 0.05) !important;
-                }
-                .section-content {
-                    transition: height 0.2s ease-out;
                 }
                 .pdsl-section[data-status="DONE"] .section-header {
                     opacity: 0.7;
@@ -308,43 +305,19 @@ export class TaskRunnerPanel {
                 ${formatValue(content)}
             </div>
             <script>
-                const vscode = acquireVsCodeApi();
-                
-                // Lyt efter clicks på hele dokumentet
-                document.addEventListener('click', function(event) {
-                    const target = event.target;
+                function toggleFold(element) {
+                    const section = element.closest('.pdsl-section');
+                    const content = section.querySelector('.section-content');
+                    const icon = element.querySelector('.fold-icon');
                     
-                    // Find nærmeste .fold-toggle eller .fold-icon element
-                    const toggle = target.closest('.fold-toggle') || target.closest('.fold-icon');
-                    
-                    if (toggle) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        
-                        // Find den sektion vi arbejder med
-                        const section = toggle.closest('.pdsl-section');
-                        if (!section) return;
-                        
-                        const content = section.querySelector('.section-content');
-                        const icon = section.querySelector('.fold-icon');
-                        
-                        if (!content || !icon) return;
-                        
-                        console.log('Toggle clicked, current display:', content.style.display);
-                        
-                        if (content.style.display === 'none') {
-                            // Fold ud
-                            content.style.display = 'block';
-                            icon.textContent = '▼';
-                            console.log('Folding out');
-                        } else {
-                            // Fold ind
-                            content.style.display = 'none';
-                            icon.textContent = '▶';
-                            console.log('Folding in');
-                        }
+                    if (content.style.display === 'none') {
+                        content.style.display = 'block';
+                        icon.textContent = '▼';
+                    } else {
+                        content.style.display = 'none';
+                        icon.textContent = '▶';
                     }
-                });
+                }
             </script>
         `;
     }
@@ -354,6 +327,57 @@ export class TaskRunnerPanel {
             <!DOCTYPE html>
             <html>
             <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <script>
+                    const vscode = acquireVsCodeApi();
+                    
+                    // Global funktion til fold/unfold
+                    window.toggleFold = function(element) {
+                        const section = element.closest('.pdsl-section');
+                        const content = section.querySelector('.section-content');
+                        const icon = element.querySelector('.fold-icon');
+                        
+                        if (content.style.display === 'none') {
+                            content.style.display = 'block';
+                            icon.textContent = '▼';
+                        } else {
+                            content.style.display = 'none';
+                            icon.textContent = '▶';
+                        }
+                    };
+
+                    // Lyt efter beskeder fra extension
+                    window.addEventListener('message', event => {
+                        const message = event.data;
+                        switch (message.command) {
+                            case 'updatePdslView':
+                                document.getElementById('pdsl-content-view').innerHTML = message.content;
+                                break;
+                        }
+                    });
+
+                    // Switch view funktion
+                    window.switchView = function(viewName) {
+                        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                        
+                        document.getElementById(viewName + '-view').classList.add('active');
+                        document.querySelector(\`[onclick="switchView('\${viewName}')"]\`).classList.add('active');
+                        
+                        const dropdown = document.querySelector('.pdsl-dropdown');
+                        dropdown.style.display = viewName === 'pdsl' ? 'block' : 'none';
+                    };
+
+                    // Show PDSL content funktion
+                    window.showPdslContent = function(path) {
+                        if (!path) return;
+                        vscode.postMessage({
+                            command: 'showPdslContent',
+                            path: path
+                        });
+                    };
+                </script>
                 <style>
                     :root {
                         --grid-gap: 12px;
@@ -555,39 +579,6 @@ export class TaskRunnerPanel {
                         <div id="pdsl-content-view"></div>
                     </div>
                 </div>
-                
-                <script>
-                    const vscode = acquireVsCodeApi();
-                    
-                    function switchView(viewName) {
-                        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-                        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                        
-                        document.getElementById(viewName + '-view').classList.add('active');
-                        document.querySelector(\`[onclick="switchView('\${viewName}')"]\`).classList.add('active');
-                        
-                        // Vis/skjul dropdown baseret på view
-                        const dropdown = document.querySelector('.pdsl-dropdown');
-                        dropdown.style.display = viewName === 'pdsl' ? 'block' : 'none';
-                    }
-
-                    function showPdslContent(path) {
-                        if (!path) return;
-                        vscode.postMessage({
-                            command: 'showPdslContent',
-                            path: path
-                        });
-                    }
-
-                    window.addEventListener('message', event => {
-                        const message = event.data;
-                        switch (message.command) {
-                            case 'updatePdslView':
-                                document.getElementById('pdsl-content-view').innerHTML = message.content;
-                                break;
-                        }
-                    });
-                </script>
             </body>
             </html>
         `;
