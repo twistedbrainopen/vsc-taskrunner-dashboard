@@ -96,16 +96,16 @@ Task Runner Dashboard er en VSCode extension designet til at visualisere og inte
 ## Installation
 
 ### Installation og Opdatering
-Installations- og opdaterings-scripts findes i `/src` mappen:
+Installations- og opdaterings-scripts findes i [`/scripts`](scripts/) mappen:
 ```bash
 # Gør scripts eksekverbare
-chmod +x src/trdInstall.sh src/trdUpdate.sh
+chmod +x scripts/trdInstall.sh scripts/trdUpdate.sh
 
 # Installer Task Runner
-./src/trdInstall.sh
+./scripts/trdInstall.sh
 
 # Opdater når der er en ny version
-./src/trdUpdate.sh
+./scripts/trdUpdate.sh
 ```
 
 ## Konfiguration
