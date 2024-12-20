@@ -95,41 +95,41 @@ Task Runner Dashboard er en VSCode extension designet til at visualisere og inte
 
 ## Installation
 
-### Via install.sh (Anbefalet Metode)
+### Via trdInstall.sh (Anbefalet Metode)
 1. Download install script:
 ```bash
-curl -O https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/install.sh
-chmod +x install.sh
+curl -O https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/trdInstall.sh
+chmod +x trdInstall.sh
 ```
 
 2. Kør scriptet:
 ```bash
-./install.sh
+./trdInstall.sh
 ```
 
 ## Opdatering
 
-### Via update.sh (Anbefalet Metode)
+### Via trdUpdate.sh (Anbefalet Metode)
 1. Download update script:
 ```bash
-curl -O https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/update.sh
-chmod +x update.sh
+curl -O https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/trdUpdate.sh
+chmod +x trdUpdate.sh
 ```
 
 2. Kør scriptet:
 ```bash
-./update.sh
+./trdUpdate.sh
 ```
 
 ### Script Reference
 Begge scripts er tilgængelige i GitHub releases:
-- [install.sh](https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/install.sh)
-- [update.sh](https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/update.sh)
+- [trdInstall.sh](https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/trdInstall.sh)
+- [trdUpdate.sh](https://github.com/twistedbrainopen/vsc-taskrunner-dashboard/releases/latest/download/trdUpdate.sh)
 
 For reference, her er indholdet af scriptsne:
 
 <details>
-<summary>install.sh</summary>
+<summary>trdInstall.sh</summary>
 
 ```bash
 #!/bin/bash
@@ -194,7 +194,7 @@ echo -e "${GREEN}See HOWTO.md for usage instructions${NC}"
 </details>
 
 <details>
-<summary>update.sh</summary>
+<summary>trdUpdate.sh</summary>
 
 ```bash
 #!/bin/bash
