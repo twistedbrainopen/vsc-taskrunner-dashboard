@@ -28,21 +28,7 @@
                 "Gem og gendan sidste viste PDSL fil mellem sessioner",
                 "Implementer scroll position bevaring",
                 "Tilføj lokal state fil i .vscode mappe"
-            ],
-            "technical_details": {
-                "state_management": {
-                    "storage": ".vscode/task-runner-state.json",
-                    "tracked_properties": [
-                        "lastViewedPdslFile",
-                        "lastScrollPosition"
-                    ]
-                },
-                "ui_features": {
-                    "folding": "Automatisk foldning af DONE/PENDING sektioner ved load",
-                    "icons": "Interaktive pile-ikoner (▼/▶) for fold/unfold",
-                    "persistence": "Session-uafhængig tilstandsbevaring"
-                }
-            }
+            ]
         },
         "ITERATION_4": {
             "name": "Task Matrix Layout",
@@ -54,32 +40,7 @@
                 "Tilføj dynamisk grid expansion for flere tasks",
                 "Optimer knap layout med ikoner og labels",
                 "Implementer responsivt design for matrix grid"
-            ],
-            "technical_details": {
-                "layout": {
-                    "base_grid": "4x3 matrix",
-                    "expansion": "Dynamisk tilføjelse af rækker ved behov",
-                    "spacing": "Konsistent padding og gap mellem knapper"
-                },
-                "ui_components": {
-                    "task_button": {
-                        "elements": ["ikon", "label", "status indikator"],
-                        "styling": "Moderne, flad design med hover effekter"
-                    },
-                    "report_section": {
-                        "placement": "Separat sektion under task matrix",
-                        "styling": "Visuelt adskilt fra task grid"
-                    }
-                },
-                "responsive_behavior": {
-                    "breakpoints": [
-                        "4x3 på full width",
-                        "3x4 på medium width",
-                        "2x6 på small width"
-                    ],
-                    "minimum_button_size": "100px x 60px"
-                }
-            }
+            ]
         },
         "ITERATION_5": {
             "name": "Kodebase Refaktorering",
@@ -91,38 +52,31 @@
                 "Opret separate view komponenter",
                 "Tilføj TypeScript interfaces",
                 "Implementer asynkron initialisering"
-            ],
-            "technical_details": {
-                "module_structure": {
-                    "views": {
-                        "PdslView": "Håndterer PDSL visning og formatering",
-                        "TaskMatrixView": "Håndterer task matrix layout og rendering"
-                    },
-                    "services": {
-                        "ConfigService": "Konfigurationshåndtering",
-                        "StateService": "Tilstandshåndtering på tværs af sessioner",
-                        "GitService": "Git integration og commit analyse"
-                    },
-                    "utils": {
-                        "iconUtils": "Centraliseret ikon håndtering"
-                    }
-                },
-                "type_definitions": {
-                    "location": "src/types/index.ts",
-                    "key_interfaces": [
-                        "TaskConfig",
-                        "CategoryConfig",
-                        "PdslFile",
-                        "StatusStats"
-                    ]
-                },
-                "improvements": {
-                    "maintainability": "Bedre separation af ansvar",
-                    "type_safety": "Omfattende TypeScript type system",
-                    "async_handling": "Robust asynkron initialisering",
-                    "state_management": "Centraliseret tilstandshåndtering"
-                }
-            }
+            ]
+        },
+        "ITERATION_6": {
+            "name": "Task Matrix Optimering",
+            "description": "Optimering af task matrix visning og interaktion",
+            "status": "DONE",
+            "tasks": [
+                "Kompakt knap layout uden tekst",
+                "Tooltips med task information",
+                "Venstre-aligned grid layout",
+                "Optimeret responsiv visning",
+                "Bred Generate Report knap i bunden"
+            ]
+        },
+        "ITERATION_7": {
+            "name": "PDSL View Genimplementering",
+            "description": "Genimplementering af PDSL view med forbedret struktur og ydeevne",
+            "status": "DONE",
+            "tasks": [
+                "Fix af type-sikkerhed i PDSL parsing",
+                "Genindføring af auto-foldning for DONE/PENDING",
+                "Forbedret status badges med farver",
+                "Optimeret fold/unfold funktionalitet",
+                "Korrekt styling og indrykning"
+            ]
         }
     }
 }

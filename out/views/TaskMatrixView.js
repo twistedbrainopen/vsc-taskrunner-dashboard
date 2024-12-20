@@ -1,22 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TaskMatrixView = void 0;
-const iconUtils_1 = require("../utils/iconUtils");
+const TaskButton_1 = require("../components/TaskButton");
+const ReportButton_1 = require("../components/ReportButton");
 class TaskMatrixView {
-    constructor() {
-        this._reportTask = {
-            id: "generate-report",
-            label: "Generate Report",
-            command: "generateReport",
-            icon: "graph",
-            color: "#CF9178"
-        };
-    }
+    constructor() { }
     render(categories) {
         return `
             <div class="task-matrix-container">
                 ${this._renderCategories(categories)}
-                ${this._renderReportSection()}
+                ${ReportButton_1.ReportButton.render()}
             </div>
         `;
     }
@@ -24,157 +17,146 @@ class TaskMatrixView {
         return Object.entries(categories)
             .map(([key, category]) => `
                 <div class="category-section">
-                    <h2 class="category-title">${category.label}</h2>
                     <div class="task-grid">
-                        ${category.tasks.map(task => this._renderTaskButton(task)).join('')}
+                        ${category.tasks.map(task => TaskButton_1.TaskButton.render(task)).join('')}
                     </div>
                 </div>
             `)
             .join('');
     }
-    _renderTaskButton(task) {
-        return `
-            <button 
-                class="task-button" 
-                onclick="handleTaskClick('${task.id}', '${task.command}')"
-                style="background-color: ${task.color}"
-                title="${task.tooltip || task.label}"
-            >
-                <span class="task-icon">${(0, iconUtils_1.getIconHtml)(task.icon)}</span>
-                <span class="task-label">${task.label}</span>
-            </button>
-        `;
-    }
-    _renderReportSection() {
-        return `
-            <div class="report-section">
-                <button 
-                    class="report-button"
-                    onclick="handleTaskClick('${this._reportTask.id}', '${this._reportTask.command}')"
-                    title="${this._reportTask.label}"
-                >
-                    <span class="task-icon">${(0, iconUtils_1.getIconHtml)(this._reportTask.icon)}</span>
-                    <span class="task-label">${this._reportTask.label}</span>
-                </button>
-            </div>
-        `;
-    }
     getStyles() {
         return `
             /* Task Matrix Container */
             .task-matrix-container {
-                max-width: 1200px;
-                margin: 0 auto;
-                padding: var(--grid-gap);
+                padding: 16px;
+                display: flex;
+                flex-direction: column;
+                position: relative;
             }
 
             /* Category Styling */
             .category-section {
-                margin-bottom: 16px;
-                background: var(--vscode-editor-background);
-                border-radius: 6px;
-                padding: 12px;
-            }
-
-            .category-title {
-                font-size: 14px;
-                font-weight: 600;
-                color: var(--vscode-foreground);
-                margin-bottom: 8px;
-                padding-bottom: 4px;
-                border-bottom: 1px solid var(--vscode-panel-border);
+                margin-bottom: 4px;
+                padding: 4px;
+                position: relative;
             }
 
             /* Task Grid */
             .task-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 8px;
-                margin-bottom: 12px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px;
+                align-items: start;
+                position: relative;
             }
             
             /* Task Button */
             .task-button {
                 display: flex;
-                flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                min-height: 50px;
-                padding: 8px;
+                height: 32px;
+                width: 32px;
+                padding: 6px;
                 border: none;
                 border-radius: 4px;
-                background: var(--vscode-button-background);
                 color: var(--vscode-button-foreground);
                 cursor: pointer;
                 transition: all 0.2s ease;
-                text-align: center;
+                position: relative;
             }
             
             .task-button:hover {
                 transform: translateY(-1px);
                 box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             }
-            
+
+            /* Custom Tooltip */
+            .task-button:hover::after {
+                content: attr(data-tooltip);
+                position: absolute;
+                bottom: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                white-space: pre;
+                background-color: var(--vscode-editor-background);
+                color: var(--vscode-foreground);
+                padding: 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                border: 1px solid var(--vscode-panel-border);
+                z-index: 100000;
+                min-width: 150px;
+                max-width: 250px;
+                text-align: left;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                pointer-events: none;
+                margin-bottom: 8px;
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                background: rgba(30, 30, 30, 0.95);
+            }
+
+            /* Ensure tooltip stays within viewport */
+            .task-button:first-child:hover::after {
+                left: 0;
+                transform: none;
+            }
+
+            .task-button:last-child:hover::after {
+                left: auto;
+                right: 0;
+                transform: none;
+            }
+
             .task-button:active {
                 transform: translateY(0);
             }
             
             .task-icon {
-                font-size: 16px;
-                margin-bottom: 4px;
-            }
-            
-            .task-label {
-                font-size: 11px;
-                font-weight: 500;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                width: 100%;
+                font-size: 14px;
             }
 
             /* Report Section */
             .report-section {
-                margin-top: 32px;
-                padding-top: 20px;
+                margin-top: 16px;
+                padding-top: 12px;
                 border-top: 1px solid var(--vscode-panel-border);
-                text-align: center;
             }
 
             .report-button {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                min-width: 200px;
-                padding: 10px 20px;
+                gap: 8px;
+                height: 32px;
+                padding: 0 12px;
                 background: var(--vscode-button-background);
                 color: var(--vscode-button-foreground);
                 border: none;
-                border-radius: var(--card-radius);
+                border-radius: 4px;
                 cursor: pointer;
                 transition: all 0.2s ease;
+                font-size: 12px;
             }
 
             .report-button:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                transform: translateY(-1px);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             }
 
             .report-button .task-icon {
-                margin: 0 8px 0 0;
-                font-size: 16px;
+                font-size: 14px;
+            }
+
+            .report-button .task-label {
+                font-weight: 500;
             }
 
             /* Responsive Design */
-            @media (max-width: 1200px) {
+            @media (max-width: 600px) {
                 .task-grid {
-                    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                }
-            }
-
-            @media (max-width: 768px) {
-                .task-grid {
-                    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                    justify-content: flex-start;
                 }
             }
         `;
@@ -188,6 +170,12 @@ class TaskMatrixView {
                     taskCommand: command
                 });
             }
+
+            // Track mouse position for tooltips
+            document.addEventListener('mousemove', function(e) {
+                document.documentElement.style.setProperty('--tooltip-x', e.clientX + 'px');
+                document.documentElement.style.setProperty('--tooltip-y', e.clientY + 'px');
+            });
         `;
     }
 }

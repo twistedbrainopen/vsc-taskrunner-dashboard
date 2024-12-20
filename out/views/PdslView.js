@@ -9,39 +9,14 @@ class PdslView {
             'PENDING': '#CF9178' // Varm orange
         };
     }
-    formatContent(content) {
+    render(files) {
         return `
-            <style>
-                .fold-toggle {
-                    border-radius: 3px;
-                    transition: background-color 0.2s;
-                }
-                .fold-toggle:hover {
-                    background-color: rgba(255, 255, 255, 0.1);
-                }
-                .fold-icon {
-                    user-select: none;
-                }
-                .section-header {
-                    transition: all 0.2s;
-                }
-                .section-header:hover {
-                    background-color: rgba(255, 255, 255, 0.05) !important;
-                }
-                .pdsl-section[data-status="DONE"] .section-header {
-                    opacity: 0.7;
-                }
-                .pdsl-section[data-status="PENDING"] .section-header {
-                    opacity: 0.5;
-                }
-                #pdsl-content-view {
-                    height: calc(100vh - 60px);
-                    overflow-y: auto;
-                    padding: 20px;
-                }
-            </style>
             <div class="pdsl-content">
-                ${this._formatValue(content)}
+                <select class="pdsl-dropdown" onchange="showPdslContent(this.value)">
+                    <option value="">Select a PDSL file to view</option>
+                    ${this.renderFileOptions(files)}
+                </select>
+                <div id="pdsl-content-view"></div>
             </div>
         `;
     }
@@ -92,44 +67,6 @@ class PdslView {
                 }
             });
 
-            function switchView(viewName) {
-                const contentView = document.getElementById('pdsl-content-view');
-                
-                if (viewName === 'tasks') {
-                    // Gem scroll position før vi skifter væk
-                    state.scrollPosition = contentView.scrollTop;
-                    vscode.postMessage({
-                        command: 'saveScrollPosition',
-                        position: state.scrollPosition
-                    });
-                }
-
-                document.querySelectorAll('.view').forEach(view => {
-                    view.classList.remove('active');
-                });
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-                
-                document.getElementById(viewName + '-view').classList.add('active');
-                document.querySelector('.nav-item[onclick*="' + viewName + '"]').classList.add('active');
-                
-                // Vis/skjul PDSL dropdown
-                document.body.classList.toggle('pdsl-view', viewName === 'pdsl');
-
-                if (viewName === 'pdsl') {
-                    // Gendan scroll position når vi kommer tilbage
-                    if (state.currentFile) {
-                        const pdslSelect = document.querySelector('.pdsl-dropdown');
-                        pdslSelect.value = state.currentFile;
-                        showPdslContent(state.currentFile);
-                        setTimeout(() => {
-                            contentView.scrollTop = state.scrollPosition;
-                        }, 100);
-                    }
-                }
-            }
-
             function showPdslContent(path) {
                 if (!path) return;
                 state.currentFile = path;
@@ -163,6 +100,66 @@ class PdslView {
                     showPdslContent(state.currentFile);
                 }
             });
+        `;
+    }
+    getStyles() {
+        return `
+            .pdsl-content {
+                height: 100%;
+            }
+
+            .pdsl-dropdown {
+                width: 100%;
+                padding: 8px;
+                margin-bottom: 16px;
+                background: var(--vscode-dropdown-background);
+                color: var(--vscode-dropdown-foreground);
+                border: 1px solid var(--vscode-dropdown-border);
+                border-radius: 4px;
+                outline: none;
+            }
+
+            #pdsl-content-view {
+                height: calc(100vh - 140px);
+                overflow-y: auto;
+                padding: 16px;
+            }
+
+            .fold-toggle {
+                border-radius: 3px;
+                transition: background-color 0.2s;
+            }
+
+            .fold-toggle:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+
+            .fold-icon {
+                user-select: none;
+            }
+
+            .section-header {
+                transition: all 0.2s;
+            }
+
+            .section-header:hover {
+                background-color: rgba(255, 255, 255, 0.05) !important;
+            }
+
+            .pdsl-section[data-status="DONE"] .section-header {
+                opacity: 0.7;
+            }
+
+            .pdsl-section[data-status="PENDING"] .section-header {
+                opacity: 0.5;
+            }
+        `;
+    }
+    formatContent(content) {
+        return `
+            <div class="pdsl-formatted-content">
+                ${this._formatValue(content)}
+            </div>
         `;
     }
     _getStatusBadge(status) {

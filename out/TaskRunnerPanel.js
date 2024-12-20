@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TaskRunnerPanel = void 0;
 const vscode = require("vscode");
+const path = require("path");
 const PdslView_1 = require("./views/PdslView");
 const TaskMatrixView_1 = require("./views/TaskMatrixView");
 const ConfigService_1 = require("./services/ConfigService");
@@ -126,12 +127,11 @@ class TaskRunnerPanel {
                     :root {
                         --grid-gap: 12px;
                         --card-radius: 6px;
-                        --button-min-width: 100px;
-                        --button-height: 60px;
                     }
                     
                     body {
-                        padding: var(--grid-gap);
+                        padding: 0;
+                        margin: 0;
                         color: var(--vscode-editor-foreground);
                         font-family: var(--vscode-font-family);
                         background: var(--vscode-editor-background);
@@ -165,20 +165,6 @@ class TaskRunnerPanel {
                         color: var(--vscode-button-foreground);
                     }
                     
-                    .pdsl-dropdown {
-                        flex: 1;
-                        padding: 4px 8px;
-                        background: var(--vscode-dropdown-background);
-                        color: var(--vscode-dropdown-foreground);
-                        border: 1px solid var(--vscode-dropdown-border);
-                        border-radius: 4px;
-                        display: none;
-                    }
-                    
-                    .pdsl-view .pdsl-dropdown {
-                        display: block;
-                    }
-                    
                     /* Content Area Styles */
                     .content-area {
                         margin-top: 48px;
@@ -194,34 +180,40 @@ class TaskRunnerPanel {
                     }
 
                     ${this._taskMatrixView.getStyles()}
+                    ${this._pdslView.getStyles()}
                 </style>
-                <script>
-                    const vscode = acquireVsCodeApi();
-                    ${this._taskMatrixView.getClientScript()}
-                    ${this._pdslView.getClientScript(this._lastScrollPosition, this._lastViewedPdslFile)}
-                </script>
             </head>
             <body>
                 <nav class="nav-menu">
-                    <div class="nav-item active" onclick="switchView('tasks')">Tasks</div>
-                    <div class="nav-item" onclick="switchView('pdsl')">PDSL Files</div>
-                    <select class="pdsl-dropdown" onchange="showPdslContent(this.value)">
-                        <option value="">Select a PDSL file to view</option>
-                        ${this._pdslView.renderFileOptions(this._pdslFiles)}
-                    </select>
+                    <div class="nav-item active" data-view="tasks">Tasks</div>
+                    <div class="nav-item" data-view="pdsl">PDSL Files</div>
                 </nav>
-                
                 <div class="content-area">
                     <div id="tasks-view" class="view active">
-                        <div class="task-matrix-container">
-                            ${taskGrid}
-                        </div>
+                        ${taskGrid}
                     </div>
-                    
                     <div id="pdsl-view" class="view">
-                        <div id="pdsl-content-view"></div>
+                        ${this._pdslView.render(this._pdslFiles)}
                     </div>
                 </div>
+                <script>
+                    const vscode = acquireVsCodeApi();
+                    
+                    // View switching
+                    document.querySelectorAll('.nav-item').forEach(item => {
+                        item.addEventListener('click', () => {
+                            const viewId = item.dataset.view;
+                            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                            
+                            document.getElementById(viewId + '-view').classList.add('active');
+                            item.classList.add('active');
+                        });
+                    });
+
+                    ${this._taskMatrixView.getClientScript()}
+                    ${this._pdslView.getClientScript(this._lastScrollPosition, this._lastViewedPdslFile)}
+                </script>
             </body>
             </html>
         `;
@@ -235,15 +227,25 @@ class TaskRunnerPanel {
         console.log('Generating report...'); // Debug log
         const report = await this._generateStatusReport();
         console.log('Report generated:', report); // Debug log
-        const doc = await vscode.workspace.openTextDocument({
-            content: report,
-            language: 'markdown'
+        const workspaceRoot = ConfigService_1.ConfigService.getWorkspaceRoot();
+        if (!workspaceRoot) {
+            vscode.window.showErrorMessage('Ingen workspace fundet!');
+            return;
+        }
+        // Vis save dialog
+        const defaultPath = path.join(workspaceRoot, `project-status-${new Date().toISOString().split('T')[0]}.md`);
+        const uri = await vscode.window.showSaveDialog({
+            defaultUri: vscode.Uri.file(defaultPath),
+            filters: {
+                'Markdown': ['md']
+            },
+            title: 'Gem Status Rapport'
         });
-        await vscode.window.showTextDocument(doc, {
-            preview: false,
-            viewColumn: vscode.ViewColumn.Nine,
-            preserveFocus: false
-        });
+        if (uri) {
+            const reportBuffer = Buffer.from(report, 'utf8');
+            await vscode.workspace.fs.writeFile(uri, reportBuffer);
+            vscode.window.showInformationMessage('Status rapport gemt!');
+        }
     }
     async _handleShowPdslContent(path) {
         const selectedFile = this._pdslFiles.find(f => f.path === path);
@@ -302,23 +304,35 @@ class TaskRunnerPanel {
             };
             traverse(pdsl.content);
         });
-        return `
-            # Project Status Report
-            Generated: ${new Date().toLocaleString()}
+        const completionPercentage = Math.round((stats.done / stats.total) * 100);
+        const date = new Date().toLocaleString('da-DK', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        return `# Projekt Status Rapport
+Genereret: ${date}
 
-            ## Overview
-            - Total Tasks: ${stats.total}
-            - Completed: ${stats.done} (${Math.round(stats.done / stats.total * 100)}%)
-            - In Progress: ${stats.inProgress}
-            - Pending: ${stats.pending}
-            
-            ## Iterations
-            Total Iterations: ${stats.iterations.size}
-            ${Array.from(stats.iterations).join(', ')}
+## 📊 Overblik
+- **Total Tasks:** ${stats.total}
+- **Færdige:** ${stats.done} (${completionPercentage}%)
+- **I Gang:** ${stats.inProgress}
+- **Afventer:** ${stats.pending}
 
-            ## Recent Updates
-            ${stats.recentUpdates.slice(-5).map(update => `- ${update.name}: ${update.status} (${update.path})`).join('\n')}
-        `;
+## 🎯 Iterationer
+**Antal Iterationer:** ${stats.iterations.size}
+${Array.from(stats.iterations).map(it => `- ${it}`).join('\n')}
+
+## 📝 Seneste Opdateringer
+${stats.recentUpdates.slice(-5).map(update => `- **${update.name}** (${update.status})\n  _Sti: ${update.path}_`).join('\n')}
+
+## 📈 Fremskridt
+- **Færdiggørelsesgrad:** ${completionPercentage}%
+- **Resterende Tasks:** ${stats.total - stats.done}
+- **Aktive Tasks:** ${stats.inProgress}
+`;
     }
     dispose() {
         TaskRunnerPanel.currentPanel = undefined;
