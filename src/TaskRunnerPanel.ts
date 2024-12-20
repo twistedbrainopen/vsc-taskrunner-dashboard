@@ -57,6 +57,8 @@ export class TaskRunnerPanel {
     private readonly _extensionUri: vscode.Uri;
     private _disposables: vscode.Disposable[] = [];
     private _pdslFiles: PdslFile[] = [];
+    private _lastViewedPdslFile: string | undefined;
+    private _lastScrollPosition: number = 0;
 
     private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
         this._panel = panel;
@@ -97,12 +99,17 @@ export class TaskRunnerPanel {
                     case 'showPdslContent':
                         const selectedFile = this._pdslFiles.find(f => f.path === message.path);
                         if (selectedFile) {
+                            this._lastViewedPdslFile = message.path;
                             const formattedContent = this._formatPdslContent(selectedFile.content);
                             this._panel.webview.postMessage({
                                 command: 'updatePdslView',
-                                content: formattedContent
+                                content: formattedContent,
+                                scrollPosition: this._lastScrollPosition
                             });
                         }
+                        break;
+                    case 'saveScrollPosition':
+                        this._lastScrollPosition = message.position;
                         break;
                 }
             },
@@ -304,21 +311,6 @@ export class TaskRunnerPanel {
             <div class="pdsl-content">
                 ${formatValue(content)}
             </div>
-            <script>
-                function toggleFold(element) {
-                    const section = element.closest('.pdsl-section');
-                    const content = section.querySelector('.section-content');
-                    const icon = element.querySelector('.fold-icon');
-                    
-                    if (content.style.display === 'none') {
-                        content.style.display = 'block';
-                        icon.textContent = '▼';
-                    } else {
-                        content.style.display = 'none';
-                        icon.textContent = '▶';
-                    }
-                }
-            </script>
         `;
     }
 
@@ -329,55 +321,6 @@ export class TaskRunnerPanel {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <script>
-                    const vscode = acquireVsCodeApi();
-                    
-                    // Global funktion til fold/unfold
-                    window.toggleFold = function(element) {
-                        const section = element.closest('.pdsl-section');
-                        const content = section.querySelector('.section-content');
-                        const icon = element.querySelector('.fold-icon');
-                        
-                        if (content.style.display === 'none') {
-                            content.style.display = 'block';
-                            icon.textContent = '▼';
-                        } else {
-                            content.style.display = 'none';
-                            icon.textContent = '▶';
-                        }
-                    };
-
-                    // Lyt efter beskeder fra extension
-                    window.addEventListener('message', event => {
-                        const message = event.data;
-                        switch (message.command) {
-                            case 'updatePdslView':
-                                document.getElementById('pdsl-content-view').innerHTML = message.content;
-                                break;
-                        }
-                    });
-
-                    // Switch view funktion
-                    window.switchView = function(viewName) {
-                        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-                        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                        
-                        document.getElementById(viewName + '-view').classList.add('active');
-                        document.querySelector(\`[onclick="switchView('\${viewName}')"]\`).classList.add('active');
-                        
-                        const dropdown = document.querySelector('.pdsl-dropdown');
-                        dropdown.style.display = viewName === 'pdsl' ? 'block' : 'none';
-                    };
-
-                    // Show PDSL content funktion
-                    window.showPdslContent = function(path) {
-                        if (!path) return;
-                        vscode.postMessage({
-                            command: 'showPdslContent',
-                            path: path
-                        });
-                    };
-                </script>
                 <style>
                     :root {
                         --grid-gap: 12px;
@@ -556,7 +499,121 @@ export class TaskRunnerPanel {
                     .view.active {
                         display: block;
                     }
+                    #pdsl-content-view {
+                        height: calc(100vh - 60px);
+                        overflow-y: auto;
+                        padding: 20px;
+                    }
                 </style>
+                <script>
+                    const vscode = acquireVsCodeApi();
+                    
+                    // Initialiser state
+                    const state = {
+                        scrollPosition: ${this._lastScrollPosition},
+                        currentFile: '${this._lastViewedPdslFile || ''}'
+                    };
+
+                    // Global funktion til fold/unfold
+                    window.toggleFold = function(element) {
+                        const section = element.closest('.pdsl-section');
+                        const content = section.querySelector('.section-content');
+                        const icon = element.querySelector('.fold-icon');
+                        
+                        if (content.style.display === 'none') {
+                            content.style.display = 'block';
+                            icon.textContent = '▼';
+                        } else {
+                            content.style.display = 'none';
+                            icon.textContent = '▶';
+                        }
+                    };
+
+                    // Lyt efter beskeder fra extension
+                    window.addEventListener('message', event => {
+                        const message = event.data;
+                        switch (message.command) {
+                            case 'updatePdslView':
+                                const contentView = document.getElementById('pdsl-content-view');
+                                contentView.innerHTML = message.content;
+                                // Vent på at indholdet er renderet før vi scroller
+                                setTimeout(() => {
+                                    contentView.scrollTop = state.scrollPosition;
+                                }, 100);
+                                break;
+                        }
+                    });
+
+                    // Switch view funktion
+                    window.switchView = function(viewName) {
+                        const contentView = document.getElementById('pdsl-content-view');
+                        
+                        if (viewName === 'tasks') {
+                            // Gem scroll position før vi skifter væk
+                            state.scrollPosition = contentView.scrollTop;
+                            vscode.postMessage({
+                                command: 'saveScrollPosition',
+                                position: state.scrollPosition
+                            });
+                        }
+
+                        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                        
+                        document.getElementById(viewName + '-view').classList.add('active');
+                        document.querySelector(\`[onclick="switchView('\${viewName}')"]\`).classList.add('active');
+                        
+                        const dropdown = document.querySelector('.pdsl-dropdown');
+                        dropdown.style.display = viewName === 'pdsl' ? 'block' : 'none';
+
+                        if (viewName === 'pdsl') {
+                            // Gendan scroll position når vi kommer tilbage
+                            if (state.currentFile) {
+                                const pdslSelect = document.querySelector('.pdsl-dropdown');
+                                pdslSelect.value = state.currentFile;
+                                showPdslContent(state.currentFile);
+                                setTimeout(() => {
+                                    contentView.scrollTop = state.scrollPosition;
+                                }, 100);
+                            }
+                        }
+                    };
+
+                    // Show PDSL content funktion
+                    window.showPdslContent = function(path) {
+                        if (!path) return;
+                        state.currentFile = path;
+                        vscode.postMessage({
+                            command: 'showPdslContent',
+                            path: path
+                        });
+                    };
+
+                    // Scroll event handler med debounce
+                    let scrollTimeout;
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const contentView = document.getElementById('pdsl-content-view');
+                        if (contentView) {
+                            contentView.addEventListener('scroll', function() {
+                                clearTimeout(scrollTimeout);
+                                scrollTimeout = setTimeout(() => {
+                                    state.scrollPosition = this.scrollTop;
+                                    vscode.postMessage({
+                                        command: 'saveScrollPosition',
+                                        position: state.scrollPosition
+                                    });
+                                }, 100);
+                            });
+                        }
+
+                        // Initialiser dropdown hvis der er en gemt fil
+                        const pdslSelect = document.querySelector('.pdsl-dropdown');
+                        if (state.currentFile) {
+                            pdslSelect.value = state.currentFile;
+                            showPdslContent(state.currentFile);
+                        }
+                    });
+                </script>
             </head>
             <body>
                 <nav class="nav-menu">
