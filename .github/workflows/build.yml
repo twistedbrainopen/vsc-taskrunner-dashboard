@@ -17,22 +17,29 @@ jobs:
           node-version: '16.x'
           cache: 'npm'
       
-      - name: Clean Install Dependencies
+      - name: Install Dependencies
         run: |
-          npm cache clean --force
-          rm -rf node_modules package-lock.json
           npm install
-          npm install -D @types/node@16
-          npm install -D typescript@4.9.5
-      
-      - name: Verify TypeScript Installation
-        run: |
-          tsc --version
-          ls -la node_modules/typescript/lib/
+          echo "TypeScript version:"
+          npx tsc --version
+          echo "Node version:"
+          node --version
+          echo "Contents of node_modules/@types/node:"
           ls -la node_modules/@types/node/
+          echo "Contents of node_modules/typescript/lib:"
+          ls -la node_modules/typescript/lib/
+      
+      - name: Show TypeScript Config
+        run: |
+          echo "tsconfig.json contents:"
+          cat tsconfig.json
+          echo "TypeScript compiler options:"
+          npx tsc --showConfig
       
       - name: Compile TypeScript
-        run: npm run compile
+        run: |
+          echo "Running TypeScript compiler in verbose mode:"
+          npx tsc -p ./ --listFiles --traceResolution
       
       - name: Create Release Package
         run: |
